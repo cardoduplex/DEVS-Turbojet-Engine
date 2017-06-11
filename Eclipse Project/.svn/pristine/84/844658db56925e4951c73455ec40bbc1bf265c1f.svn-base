@@ -1,7 +1,0 @@
-{
-  "KeABC_Str_Example1" : "Mapping 1",
-  "KeABC_Cnt_Example1" : 1996,
-  "KeABC_Bool_Example2" : false,
-  "KaABC_double_Example2" : [5,7,11,13],
-  "KeABC_ms_Example2" : "0x07CD"
-}

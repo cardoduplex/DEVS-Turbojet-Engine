@@ -1,6 +1,0 @@
-{
-  "KeTJET_Bool_BlackBox" : "false",
-  "KeTJET_Bool_Afterburner" : "false",
-  "KeTJET_Cnt_SimViewRows" : "2",
-  "KeTJET_Str_FluidModel" : "Isentropic/Static (subsonic)"
-}
