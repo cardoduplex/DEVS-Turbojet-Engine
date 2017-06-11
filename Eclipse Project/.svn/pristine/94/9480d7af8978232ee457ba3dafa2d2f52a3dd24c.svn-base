@@ -1,0 +1,75 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package experiment.model;
+
+import GenCol.entity;
+import experiment.toolkit.ValueSet;
+import model.modeling.message;
+
+/**
+ * The Class ExperimentDataRecorder.
+ */
+public class ExperimentEngineDataRecorder extends ExperimentEngineBase {
+
+  /**
+   * Instantiates a new experiment data recorder.
+   */
+  public ExperimentEngineDataRecorder() {
+    this("ExperimentDataRecorder");
+  }
+
+  /**
+   * Instantiates a new experiment data recorder.
+   *
+   * @param name the name
+   */
+  public ExperimentEngineDataRecorder(final String name) {
+    super(name);
+
+    addInport("xIn");
+  }
+
+  /* (non-Javadoc)
+   * @see ExperimentMod.ExperimentBase#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(final double e, final message x) {
+    Continue(e);
+    if (phaseIs("passive"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "xIn", i)) {
+          final entity job = x.getValOnPort("xIn", i);
+          if (valueSetCache.test(job.getName()))
+            valueSetQueueIn.add(valueSetCache.popFinal(job.getName()));
+          else
+            log.err("ValueSet not found in cache: " + job.getName());
+          holdIn("process", 0);
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    while (valueSetQueueIn.size() > 0) {
+      final ValueSet valueSet = valueSetQueueIn.remove();
+      log.out("--- Process data recorder " + valueSet.getKey() + " ----");
+      valueSet.dump("[" + valueSet.getVersion() + "]  ");
+    }
+    passivate();
+  }
+}

@@ -1,0 +1,416 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package experiment.toolkit;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.lang3.StringUtils;
+
+import experiment.toolkit.Value.theType;
+
+/**
+ * The Class ValueSet.
+ */
+public class ValueSet {
+
+  /** The component run. */
+  public static final int componentRun = 1;
+
+  /** The component model. */
+  public static final int componentModel = 2;
+
+  /** The component pass. */
+  public static final int componentPass = 3;
+
+  /** The component update. */
+  public static final int componentUpdate = 4;
+
+  /** The settings. */
+  private final Settings settings = SettingsSingleton.getInstance();
+
+  /** The consumers. */
+  private AtomicInteger consumers = new AtomicInteger();
+
+  /** The description. */
+  private String description;
+
+  /** The run. */
+  private final int run;
+
+  /** The model. */
+  private final char model;
+
+  /** The pass. */
+  private long pass;
+
+  /** The update. */
+  private long update;
+
+  /** The is pass recorded. */
+  private boolean isPassRecorded;
+
+  /** The is run terminated. */
+  private boolean isRunTerminated;
+
+  /** The is run completed. */
+  private boolean isRunCompleted;
+
+  /** The value map. */
+  private Map<String, Value> valueMap = new LinkedHashMap<String, Value>();
+
+  /** The label. */
+  private String label;
+
+  /** The dump message alignment. */
+  private int dumpMessageAlignment;
+
+  /**
+   * Instantiates a new value set.
+   *
+   * @param run the run
+   * @param model the model
+   */
+  public ValueSet(final int run, final char model) {
+    this.description = "";
+    this.run = run;
+    this.model = model;
+    pass = 0;
+    update = 0;
+    isPassRecorded = false;
+    isRunTerminated = false;
+    isRunCompleted = false;
+    label = settings.lookupString("ValueSet_Label", "ValueSet");
+    dumpMessageAlignment = settings.lookupInt("ValueSet_MessageAlignment", "60");
+  }
+
+  /**
+   * Gets the dump message alignment.
+   *
+   * @return the dump message alignment
+   */
+  public int getDumpMessageAlignment() {
+    return dumpMessageAlignment;
+  }
+
+  /**
+   * Gets the map.
+   *
+   * @return the map
+   */
+  public Map<String, Value> getMap() {
+    return valueMap;
+  }
+
+  /**
+   * Gets the key.
+   *
+   * @return the key
+   */
+  public String getKey() {
+    return label + ":" + run + ":" + model + ":" + pass + "." + update;
+  }
+
+  /**
+   * Gets the consumers.
+   *
+   * @return the consumers
+   */
+  public int getConsumers() {
+    return consumers.get();
+  }
+
+  /**
+   * Gets the description.
+   *
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * Sets the description.
+   *
+   * @param description the new description
+   */
+  public void setDescription(final String description) {
+    this.description = description;
+  }
+
+  /**
+   * Gets the run.
+   *
+   * @return the run
+   */
+  public int getRun() {
+    return run;
+  }
+
+  /**
+   * Gets the model.
+   *
+   * @return the model
+   */
+  public char getModel() {
+    return model;
+  }
+
+  /**
+   * Gets the model index.
+   *
+   * @return the model index
+   */
+  public byte getModelIndex() {
+    return (byte)(model - 'A');
+  }
+
+  /**
+   * Gets the single pass of ValueSet.
+   *
+   * @return single pass of ValueSet
+   */
+  public long getPass() {
+    return pass;
+  }
+
+  /**
+   * Checks if is first pass.
+   *
+   * @return true, if is first pass
+   */
+  public boolean isFirstPass() {
+    return pass == 1;
+  }
+
+  /**
+   * Gets the update.
+   *
+   * @return the update
+   */
+  public long getUpdate() {
+    return update;
+  }
+
+  /**
+   * Sets the consumers.
+   *
+   * @param consumers the new consumers
+   */
+  public void setConsumers(final int consumers) {
+    this.consumers.set(consumers);
+  }
+
+  /**
+   * Decrement consumers.
+   *
+   * @return true, if successful
+   */
+  public boolean decrementAndTestConsumers() {
+    boolean noConsumers = true;
+    if (consumers.get() > 0) {
+      final int remainingConsumers = consumers.decrementAndGet();
+      noConsumers = remainingConsumers <= 0;
+      if (remainingConsumers < 0)
+        consumers.set(0);
+    }
+    return noConsumers;
+  }
+
+  /**
+   * Increment pass.
+   */
+  public void incrementPass() {
+    pass++;
+    update = 0;
+    isPassRecorded = false;
+  }
+
+  /**
+   * Increment update.
+   */
+  public void incrementUpdate() {
+    update++;
+  }
+
+  /**
+   * Record pass.
+   */
+  public void recordPass() {
+    isPassRecorded = true;
+  }
+
+  /**
+   * Checks if is pass recorded.
+   *
+   * @return true, if is pass recorded
+   */
+  public boolean isPassRecorded() {
+    return isPassRecorded == true;
+  }
+
+  /**
+   * Terminate run.
+   */
+  public void terminateRun() {
+    isRunTerminated = true;
+  }
+
+  /**
+   * Checks if is run terminated.
+   *
+   * @return true, if is run terminated
+   */
+  public boolean isRunTerminated() {
+    return isRunTerminated == true;
+  }
+
+  /**
+   * Complete run.
+   */
+  public void completeRun() {
+    isRunCompleted = true;
+  }
+
+  /**
+   * Checks if is run complete.
+   *
+   * @return true, if is run complete
+   */
+  public boolean isRunCompleted() {
+    return isRunCompleted == true;
+  }
+
+  /**
+   * Dump.
+   */
+  public void dump() {
+    dump("");
+  }
+
+  /**
+   * Dump.
+   *
+   * @param prefix the prefix
+   */
+  public void dump(final String prefix) {
+    System.out.println(prefix + "Model = " + model + "; " + "Run = " + run + "; " + "Pass = " + pass + "." + update + "; Terminated = " + isRunTerminated() + "; Completed = " + isRunCompleted());
+    String group = null;
+    final String format = "%-" + dumpMessageAlignment + "s ";
+    for (Entry<String, Value> entry : valueMap.entrySet()) {
+      final Value value = entry.getValue();
+      if (value.getGroup() != null && (group == null || !group.equals(value.getGroup()))) {
+        group = value.getGroup();
+        System.out.println(prefix + group);
+      }
+      final String tmpName = StringUtils.isBlank(value.getAltName()) ? entry.getKey() : value.getAltName();
+      final String message = tmpName + ": " + value.getValue() + " " + value.getUnits();
+      System.out.println(prefix + "  " + String.format(format, message) + value.getDescription());
+    }
+  }
+
+  /**
+   * Adds the value.
+   *
+   * @param group the group
+   * @param name the name
+   * @param type the type
+   * @param value the value
+   * @param units the units
+   * @param description the description
+   * @param altName the alt name
+   */
+  public void addValue(final String group, final String name, final theType type, final Object value, final String units, final String description, final String altName) {
+    valueMap.put(name, new Value(group, altName, type, value, units, description));
+  }
+
+  /**
+   * File add value.
+   *
+   * @param group the group
+   * @param name the name
+   * @param type the type
+   * @param value the value
+   * @param units the units
+   * @param description the description
+   * @param altName the alt name
+   */
+  public void fileAddValue(final String group, final String name, final String type, final String value, final String units, final String description, final String altName) {
+    switch (type) {
+    case "boolean":
+      valueMap.put(name, new Value(group, altName, Value.theType.eBoolean, Boolean.parseBoolean(value), units, description));
+      break;
+    case "double":
+      valueMap.put(name, new Value(group, altName, Value.theType.eDouble, Double.parseDouble(value), units, description));
+      break;
+    default:
+      throw new RuntimeException("Value type '" + type + "' for " + name + " is unsupported.");
+    }
+  }
+
+  /**
+   * Value pop.
+   *
+   * @param someClass the some class
+   */
+  public void valuePop(Object someClass) {
+    final Field[] fields = someClass.getClass().getDeclaredFields();
+    for (int i = 0; i < fields.length; i++) {
+      final Field field = fields[i];
+      final String valueName = field.getName();
+      if (valueMap.containsKey(valueName)) {
+        final int modifiers = field.getModifiers();
+        if (!Modifier.isFinal(modifiers)) {
+          final boolean accessible = field.isAccessible();
+          if (!accessible)
+            field.setAccessible(true);
+          final Value value = valueMap.get(valueName);
+          try {
+            field.set(someClass, value.getValue());
+          } catch (IllegalArgumentException|IllegalAccessException e) {
+            throw new RuntimeException("ValueSet pop " + valueName + ": " + e.getMessage());
+          }
+          if (!accessible)
+            field.setAccessible(false);
+        }
+      }
+    }
+  }
+
+  /**
+   * Value push.
+   *
+   * @param someClass the some class
+   */
+  public void valuePush(Object someClass) {
+    final Field[] fields = someClass.getClass().getDeclaredFields();
+    for (int i = 0; i < fields.length; i++) {
+      final Field field = fields[i];
+      final String valueName = field.getName();
+      if (valueMap.containsKey(valueName)) {
+        final int modifiers = field.getModifiers();
+        if (!Modifier.isFinal(modifiers)) {
+          final boolean accessible = field.isAccessible();
+          if (!accessible)
+            field.setAccessible(true);
+          final Value value = valueMap.get(valueName);
+          try {
+            value.setValue(field.get(someClass));
+          } catch (IllegalArgumentException|IllegalAccessException e) {
+            throw new RuntimeException("ValueSet push " + valueName + ": " + e.getMessage());
+          }
+          if (!accessible)
+            field.setAccessible(false);
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-09
+ */
+package experiment.design;
+
+import experiment.design.util.ValueSet2Csv;
+import experiment.design.util.ValueSet2Txt;
+import experiment.model.ExperimentEngineDataRecorder;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class DataRecorder.
+ */
+public class DataRecorder extends ExperimentEngineDataRecorder {
+
+  /** The value set to CSV. */
+  private ValueSet2Csv valueSet2Csv = new ValueSet2Csv();
+
+  /** The value set 2 txt. */
+  private ValueSet2Txt valueSet2Txt = new ValueSet2Txt();
+
+  /** The dump value set. */
+  private boolean dumpValueSet;
+
+  /** The dump each pass. */
+  private boolean dumpEachPass;
+
+  /**
+   * Instantiates a new data recorder.
+   *
+   * @param name the name
+   */
+  public DataRecorder(final String name) {
+    super(name);
+    dumpValueSet = settings.lookupBool("ExperimentEngine_DumpValueSet", "true");
+    dumpEachPass = settings.lookupBool("ExperimentEngine_DumpEachPass", "false");
+  }
+
+  /* (non-Javadoc)
+   * @see experiment.model.ExperimentEngineDataRecorderInterface#processValueSet(experiment.toolkit.ValueSet)
+   */
+  public void processValueSet(final ValueSet valueSet) {
+    final boolean processFlag = valueSet.isRunTerminated() || valueSet.isPassRecorded() || valueSet.isRunCompleted();
+
+    if (dumpValueSet && (dumpEachPass || processFlag)) {
+      final String prefix = "[" + valueSet.getModel() + "]  ";
+      log.out(prefix + "ValueSet dump for key '" + valueSet.getKey() + "' " +
+          (valueSet.isRunTerminated() ? "(run complete)" : "(intermediate results)"));
+      valueSet.dump(prefix);
+    }
+
+    if (processFlag) {
+      valueSet2Csv.processValueSet(valueSet);
+      valueSet2Txt.processValueSet(valueSet);
+    }
+  }
+}

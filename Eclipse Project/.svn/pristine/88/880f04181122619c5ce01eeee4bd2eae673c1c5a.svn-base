@@ -1,0 +1,49 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package EngineMod;
+
+import turbojet.toolkit.ValueSet;
+
+/**
+ * The Class EngineStage1.
+ */
+public class EngineStage1 extends EngineBase {
+
+  /**
+   * Instantiates a new engine stage 1.
+   */
+  public EngineStage1() {
+    this("Stage1", 'A');
+  }
+
+  /**
+   * Instantiates a new engine stage 1.
+   *
+   * @param name the name
+ * @param version
+   */
+  public EngineStage1(final String name, final char version) {
+    super(name, version);
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+  }
+
+  /* (non-Javadoc)
+   * @see EngineMod.EngineBase#processValueSet(turbojet.toolkit.ValueSet)
+   */
+  @Override
+  protected void processValueSet(final ValueSet valueSet) {
+    log.out("Processing " + valueSet.getKey());
+    // TBD
+  }
+}

@@ -1,0 +1,23 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package turbojet.toolkit;
+
+import java.util.HashMap;
+
+public class ValueSetCache {
+
+  private HashMap<String, ValueSet> valueSetMap = new HashMap<String, ValueSet>();
+
+  public ValueSetCache() {
+  }
+
+  public ValueSet newValueSet(final int experiment, final int counter) {
+    final ValueSet valueSet = new ValueSet(experiment, counter);
+    valueSetMap.put(valueSet.getKey(), valueSet);
+    return valueSet;
+  }
+}

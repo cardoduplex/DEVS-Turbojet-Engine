@@ -1,0 +1,81 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-02
+ */
+package TurbojetEngineMod.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class Diffuser.
+ */
+public class Diffuser extends EngineStageBase {
+
+  /** The fluid model. */
+  private final String KeFLUID_Str_Model;
+
+  /** The Tzero. */
+  private double Tzero;
+
+  /** The Pzero. */
+  private double Pzero;
+
+  /** The Mzero. */
+  private double Mzero;
+
+  /** The gamma. */
+  private double gamma;
+
+  /**
+   * Instantiates a new diffuser.
+   */
+  public Diffuser(final String name) {
+    super(name);
+    KeFLUID_Str_Model = "undefined";
+  }
+
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    // Output parameters
+    double Tt2 = 0;
+    double Pt2 = 0;
+    double tao_r = 0;
+    double pi_r = 0;
+
+    switch (KeFLUID_Str_Model) {
+    case "Isentropic/Static (subsonic)":
+      // Stagnation Temp. @ station 2
+      Tt2 = Tzero*((1+((gamma-1)/2)*(Mzero*Mzero)));
+
+      // Stagnation Press. @ station 2
+      Pt2 = Pzero*Math.pow( ((1+((gamma-1)/2)*(Mzero*Mzero))),(gamma/(gamma-1)));
+
+      // Temp. Ratio @ station 2
+      tao_r = Tt2/Tzero;
+
+      //Press. Ratio @ station 2
+      pi_r = Pt2/Pzero;
+
+      break;
+    case "Isentropic/Static (supersonic)":
+      break;
+    case "Polytropic/Static (supersonic)":
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeFLUID_Str_Model + "'");
+      break;
+    }
+
+    valueSet.addValue(group, "Tt2",   Tt2,   "", "Stagnation Temp. @ station 2");
+    valueSet.addValue(group, "Pt2",   Pt2,   "", "Stagnation Press. @ station 2");
+    valueSet.addValue(group, "tao_r", tao_r, "", "Temp. Ratio @ station 2");
+    valueSet.addValue(group, "pi_r",  pi_r,  "", "Press. Ratio @ station 2");
+    valueSet.valuePush(this);
+    valueSet.dump(">>> ");
+  }
+}

@@ -1,0 +1,102 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package experiment.model;
+
+import java.text.DecimalFormat;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.ValueSet;
+import experiment.toolkit.ValueSetCache;
+import experiment.toolkit.ValueSetCacheSingleton;
+import view.modeling.ViewableAtomic;
+
+/**
+ * The Class ExperimentBase.
+ */
+public abstract class ExperimentEngineBase extends ViewableAtomic {
+
+  /** The settings. */
+  protected final Settings settings = SettingsSingleton.getInstance();
+
+  /** The value set cache. */
+  protected final ValueSetCache valueSetCache = ValueSetCacheSingleton.getInstance();
+
+  /** The value set queue in. */
+  protected final Queue<ValueSet> valueSetQueueIn = new LinkedList<ValueSet>();
+
+  /** The value set queue out. */
+  protected final Queue<ValueSet> valueSetQueueOut = new LinkedList<ValueSet>();
+
+  /** The log. */
+  protected ExperimentLog log;
+
+  /** The show model state. */
+  protected boolean showModelState;
+
+  /**
+   * Instantiates a new experiment base.
+   */
+  public ExperimentEngineBase() {
+    this("ExperimentBase");
+    showModelState = settings.lookupBool("ExperimentEngine_ShowModelState", "true");
+  }
+
+  /**
+   * Instantiates a new experiment base.
+   *
+   * @param name the name
+   */
+  public ExperimentEngineBase(final String name) {
+    super(name);
+    log = new ExperimentLog(name);
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    valueSetQueueIn.clear();
+    valueSetQueueOut.clear();
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#showState()
+   */
+  @Override
+  public void showState() {
+    if (showModelState) {
+      super.showState();
+
+      final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+      String state = "phase=" + phase +
+          "sigma=" + deltaFormat.format(sigma) + "; " +
+          "QueueIn=" + valueSetQueueIn.size() + "; " +
+          "QueueOut=" + valueSetQueueOut.size();
+      log.out(state);
+    }
+  }
+
+  /* (non-Javadoc)
+   * @see view.modeling.ViewableAtomic#getTooltipText()
+   */
+  @Override
+  public String getTooltipText() {
+    String tooltip = super.getTooltipText();
+    for (ValueSet valueSet : valueSetQueueIn)
+      tooltip += "\nQueueIn: "+ valueSet.getKey();
+    for (ValueSet valueSet : valueSetQueueOut)
+      tooltip += "\nQueueOut: "+ valueSet.getKey();
+    return tooltip;
+  }
+}

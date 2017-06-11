@@ -1,0 +1,41 @@
+{
+  "Polytropic/Static/Supersonic" : [
+    { "Initial State" : [
+      {"Altitude" :  ["double", "45", "[kft]", "", "", true]},
+      {"Tzero" : ["double", "389.97", "[degR]", "Inlet temperature", "", true]},
+      {"Pzero" : ["double", "309.44", "[lbf/ft^2]", "Inlet pressure", "", true]},
+      {"Mzero" : ["double", "2.0", "", "Supersonic flight Mach", "", true]},
+      {"Cp_c" :  ["double", "0.24", "[Btu/lbm-degR]", "Specific heat of dry air (cool)", "", true]},
+      {"Cp_t" : ["double", "0.276", "[Btu/lbm-degR]", "Specific heat of dry air (heated)", "", true]},
+      {"gamma_c" : ["double", "1.4", "[Cp/Cv]", "(cool)", "", true]},
+      {"gamma_t" : ["double", "1.33", "[Cp/Cv]", "(heated)", "", true]},
+      {"gc" : ["double", "32.174", "[lbm-ft/s^2]", "grav. cnst.", "", true]},
+      {"hpr" : ["double", "18400.0", "[Btu/lbm]", "", "", true]},
+      {"mdot_zero" : ["double", "170.0", "[lbm/s]", "Mass flow rate of air", "", true]},
+      {"afterburnerOn" : ["boolean", "true", "", "Afterburner State", "", true]}
+    ]},
+
+    {"Polytropic Efficiencies" : [
+      {"pi_d_max" : ["double", "0.99", "", "", "", true]},
+      {"pi_b" : ["double", "0.96", "", "", "", true]},
+      {"pi_n" : ["double", "0.99", "", "", "", true]},
+      {"pi_fnz" : ["double", "0.99", "", "", "", true]}
+    ]},
+
+    {"Component Efficiencies" : [
+      {"e_c" : ["double", "0.9", "", "", "", true]},
+      {"e_f" : ["double", "0.89", "", "", "", true]},
+      {"e_t" : ["double", "0.89", "", "", "", true]},
+      {"eta_b" : ["double", "0.99", "", "", "", true]},
+      {"eta_m" : ["double", "0.99", "", "", "", true]}
+    ]},
+
+    {"Afterburner & Fan Inputs" : [
+      {"Tt4" : ["double", "3000.0", "", "", "", true]},
+      {"pi_c" : ["double", "16.0", "", "", "", true]},
+      {"pi_fan" : ["double", "2.9", "", "", "", true]},
+      {"alpha" : ["double", "0.3", "[BPR]", "", "", true]},
+      {"Tt6" : ["double", "4140.0", "", "", "", true]}
+    ]}
+  ]
+}

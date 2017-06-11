@@ -1,0 +1,42 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package experiment.toolkit;
+
+/**
+ * The Class CalibrationSingleton.
+ */
+public class CalibrationSingleton {
+
+  /** The Constant instance. */
+  private static Calibration instance = new Calibration(true);
+
+  /**
+   * Instantiates a new calibration singleton.
+   */
+  protected CalibrationSingleton() {
+  }
+
+  /**
+   * Gets the single instance of Calibration.
+   *
+   * @return single instance of Calibration
+   * @throws RuntimeException the runtime exception
+   */
+  public static Calibration getInstance() throws RuntimeException {
+    if (instance == null)
+      throw new RuntimeException("No singleton instance available");
+    else
+      return instance;
+  }
+
+  /**
+   * Release instance.
+   */
+  public void releaseInstance() {
+    instance = null;
+  }
+}

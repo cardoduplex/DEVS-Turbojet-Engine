@@ -1,0 +1,64 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-11-13
+ */
+package experiment.toolkit;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import GenCol.Pair;
+
+
+/**
+ * The Class ValueSetPair.
+ */
+public class ValueSetPair extends Pair {
+
+  public ValueSetPair(final ValueSet valueSet) throws Exception {
+    super(valueSet.getKey(), null);
+    Serialize(valueSet);
+  }
+
+  /* (non-Javadoc)
+   * @see GenCol.Pair#toString()
+   */
+  @Override
+  public String toString() {
+    return key.toString();
+  }
+
+  public ValueSet getValueSet() throws Exception {
+    return Deserialize();
+  }
+
+  private void Serialize(final ValueSet valueSet) throws Exception {
+    String valueSetString = null;
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
+    objectOutputStream.writeObject(valueSet);
+    objectOutputStream.flush();
+    valueSetString = byteArrayOutputStream.toString();
+    value = valueSetString;
+  }
+
+  /**
+   * Deserialize.
+   *
+   * @return the value set
+   * @throws Exception the exception
+   */
+  private ValueSet Deserialize() throws Exception {
+    ValueSet valueSet = null;
+    final String valueSetValue = (String) value;
+    byte b[] = valueSetValue.getBytes();
+    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(b);
+    ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
+    valueSet = (ValueSet) objectInputStream.readObject();
+    return valueSet;
+  }
+}

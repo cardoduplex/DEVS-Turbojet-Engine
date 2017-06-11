@@ -1,0 +1,116 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-03
+ */
+package TurbojetEngineMod.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class Compressor.
+ */
+public class Compressor extends EngineBase {
+
+  /** The fluid model. */
+  private final String KeTJET_Str_FluidModel;
+
+  /** Input: gamma. */
+  private double gamma;
+
+  /** Input: Cp. */
+  private double Cp;
+
+  /** Input: Tt 2. */
+  private double Tt2;
+
+  /** Input: Pt 2. */
+  private double Pt2;
+
+  /** Input: pi c. */
+  private double pi_c;
+
+  /** Input: mdot zero. */
+  private double mdot_zero;
+
+  /** Output: tao c. */
+  private double tao_c;
+
+  /** Output: w c. */
+  private double w_c;
+
+  /** Output: Wdot c. */
+  private double Wdot_c;
+
+  /** Output: Pt 3. */
+  private double Pt3;
+
+  /** Output: psi. */
+  private double psi;
+
+  /** Output: Tt 3. */
+  private double Tt3;
+
+  /**
+   * Instantiates a new compressor.
+   *
+   * @param name the name
+   */
+  public Compressor(final String name) {
+    super(name);
+    KeTJET_Str_FluidModel = "undefined";
+  }
+
+  /* (non-Javadoc)
+   * @see TurbojetEngineMod.engine.EngineBase#process(experiment.toolkit.ValueSet, experiment.toolkit.Calibration)
+   */
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    switch (KeTJET_Str_FluidModel) {
+    case "Isentropic/Static (subsonic)":
+      // Temp. Ratio @ station 3
+      tao_c = Math.pow(pi_c,((gamma-1)/gamma));
+
+      // Specific work, compressor
+      w_c = Cp*(Tt2*(tao_c-1));  //[Btu/lbm]
+
+      // Compressor Work
+      // Wdot_c = mdot_zero*w_c;  //[Btu/s]
+
+      // Compressor Work (in hp)
+      Wdot_c = mdot_zero*w_c*3600*(1/2545.7);  //[hp]
+
+      // Stagnation Pressure @ stage 3
+      Pt3 = Pt2*pi_c;
+
+      // Stagnation Pressure @ stage 3 (in psi)
+      psi = Pt3/144;  //Pt3 in [psi]
+
+      // Stagnation Temp. @ stage 3
+      Tt3 = Tt2*tao_c;
+
+      break;
+    case "Isentropic/Static (supersonic)":
+      break;
+    case "Polytropic/Static (supersonic)":
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeTJET_Str_FluidModel + "'");
+      break;
+    }
+
+    if (valueSet.getInstance() == 0) {
+      valueSet.addValue(name, "tao_c",  tao_c,  "", "Temp. Ratio @ station 3");
+      valueSet.addValue(name, "w_c",    w_c,    "[Btu/lbm]", "Specific work, compressor");
+      valueSet.addValue(name, "Wdot_c", Wdot_c, "[hp]", "Compressor Work");
+      valueSet.addValue(name, "Pt3",    Pt3,    "", "Stagnation Pressure @ stage 3");
+      valueSet.addValue(name, "psi",    psi,    "[psi]", "Stagnation Pressure @ stage 3 (in psi)");
+      valueSet.addValue(name, "Tt3",    Tt3,    "", "Stagnation Temp. @ stage 3");
+    }
+    valueSet.valuePush(this);
+  }
+}

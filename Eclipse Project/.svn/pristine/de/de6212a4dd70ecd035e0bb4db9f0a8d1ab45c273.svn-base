@@ -1,0 +1,121 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package experiment.model;
+
+import GenCol.entity;
+import experiment.design.FrontPorch;
+import experiment.toolkit.ValueSet;
+import model.modeling.message;
+
+/**
+ * The Class ExperimentFrontPorch.
+ */
+public class ExperimentEngineFrontPorch extends ExperimentEngineBase {
+
+  /** The front porch. */
+  private FrontPorch frontPorch;
+
+  /**
+   * Instantiates a new experiment front porch.
+   */
+  public ExperimentEngineFrontPorch() {
+    this("ExperimentFrontPorch");
+  }
+
+  /**
+   * Instantiates a new experiment front porch.
+   *
+   * @param name the name
+   */
+  public ExperimentEngineFrontPorch(final String name) {
+    super(name);
+    frontPorch = new FrontPorch(this.getName());
+
+    addInport("xIn");
+    addOutport("xOut");
+  }
+
+  /* (non-Javadoc)
+   * @see ExperimentMod.ExperimentBase#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    frontPorch.initialize();
+    holdIn("startup", 0);
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(final double e, final message x) {
+    Continue(e);
+    if (phaseIs("idle"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "xIn", i)) {
+          final entity job = x.getValOnPort("xIn", i);
+          if (valueSetCache.test(job.getName())) {
+            final ValueSet valueSet = valueSetCache.pop(job.getName());
+            valueSetQueueIn.add(valueSet);
+            holdIn("process", 0);
+          } else
+            log.err("ValueSet not found in cache: " + job.getName());
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    if (phaseIs("startup")) {
+      frontPorch.start(valueSetQueueOut);
+      holdIn("transfer", 0);
+    } else if (phaseIs("process")) {
+      if (valueSetQueueIn.size() > 0) {
+        frontPorch.process(valueSetQueueIn);
+        while (valueSetQueueIn.size() > 0) {
+          final ValueSet valueSet = valueSetQueueIn.remove();
+          valueSetQueueOut.add(valueSet);
+        }
+        holdIn("transfer", 0);
+      }
+    } else {
+      if (frontPorch.areExperimentsComplete())
+        passivate();
+      else
+        holdIn("idle", INFINITY);
+    }
+
+    showState();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#out()
+   */
+  @Override
+  public message out() {
+    final message m = new message();
+    if (phaseIs("transfer"))
+      while (valueSetQueueOut.size() > 0) {
+        final ValueSet valueSet = valueSetQueueOut.remove();
+        valueSetCache.putAndIncrementInstance(valueSet);
+        m.add(makeContent("xOut", new entity(valueSet.getKey())));
+      }
+    return m;
+  }
+
+  /**
+   * Gets the model count.
+   *
+   * @return the model count
+   */
+  public int getModelCount() {
+    return frontPorch.getModelCount();
+  }
+}

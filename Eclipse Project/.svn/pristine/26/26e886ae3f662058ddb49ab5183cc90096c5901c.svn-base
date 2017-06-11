@@ -1,0 +1,47 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-08
+ */
+package TurbojetEngineMod.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class EngineBase.
+ */
+public abstract class EngineBase {
+
+  /** The name. */
+  protected String name;
+
+  /** The log. */
+  protected ExperimentLog log;
+
+  public String phase;
+
+  public double sigma;
+
+  public double clock;
+
+  /**
+   * Instantiates a new engine base.
+   *
+   * @param name the name
+   */
+  public EngineBase(final String name) {
+    this.name = name;
+    log = new ExperimentLog(super.getClass().getName());
+  }
+
+  /**
+   * Process.
+   *
+   * @param valueSet the value set
+   * @param calibration the calibration
+   */
+  public abstract void process(final ValueSet valueSet, final Calibration calibration);
+}

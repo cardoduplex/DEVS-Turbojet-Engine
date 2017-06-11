@@ -1,0 +1,103 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-16
+ */
+package ExperimentMod;
+
+import java.awt.Dimension;
+import java.awt.Point;
+import java.util.Vector;
+
+import EngineMod.TurbojetEngine;
+import view.modeling.ViewableAtomic;
+import view.modeling.ViewableDigraph;
+
+/**
+ * The Class ExperimentEngine.
+ */
+public class ExperimentEngine extends ViewableDigraph {
+
+  /** The front porch. */
+  final ViewableAtomic frontPorch = new ExperimentFrontPorch("FrontPorch");
+
+  /** The back porch. */
+  final ViewableAtomic backPorch = new ExperimentBackPorch("BackPorch");
+
+  /** The data recorder. */
+  final ViewableAtomic dataRecorder = new ExperimentDataRecorder("DataRecorder");
+
+  /** The models. */
+  private final Vector<ViewableDigraph> models = new Vector<ViewableDigraph>();
+
+  /**
+   * Instantiates a new experiment engine.
+   */
+  public ExperimentEngine() {
+    this("Experiment Engine");
+  }
+
+  /**
+   * Instantiates a new experiment engine.
+   *
+   * @param name the name
+   */
+  public ExperimentEngine(String name) {
+    super(name);
+    defineLayout();
+
+    //final Settings settings = SettingsSingleton.getInstance();
+    //System.out.println("Pathname: " + settings.getPathname());
+    //System.out.println("Filename: " + settings.getFilename());
+    //System.out.println("Total: " + settings.getMap().size());
+    //settings.debug();
+  }
+
+  /**
+   * Define layout.
+   */
+  private void defineLayout() {
+    add(frontPorch);
+    add(backPorch);
+    add(dataRecorder);
+
+    addCoupling(backPorch, "trigger", frontPorch, "trigger");
+
+    char initialVersion = 'A';
+    for (int i = 0; i < 3/*TODO*/; i++) {
+      final ViewableDigraph model = new TurbojetEngine("TurbojetEngine", initialVersion);
+      models.add(model);
+      initialVersion++;
+    }
+
+    for (ViewableDigraph model : models) {
+      add(model);
+      addCoupling(frontPorch, "xOut", model, "xIn");
+      addCoupling(model, "xOut", backPorch, "xIn");
+      addCoupling(model, "xOut", dataRecorder, "xIn");
+    }
+  }
+
+  /* (non-Javadoc)
+   * @see view.modeling.ViewableDigraph#layoutForSimViewOverride()
+   */
+  @Override
+  public boolean layoutForSimViewOverride()
+  {
+    int pointX = 0;
+    int pointY = 20;
+    frontPorch.setPreferredLocation(new Point(0, pointY));
+    backPorch.setPreferredLocation(new Point(1251, pointY));
+    pointY += 80;
+    dataRecorder.setPreferredLocation(new Point(1251, pointY));
+
+    for (ViewableDigraph model : models) {
+      model.setPreferredLocation(new Point(20, pointY));
+      pointY += 225;
+    }
+
+    preferredSize = new Dimension(1479, pointY);
+    return true;
+  }
+}

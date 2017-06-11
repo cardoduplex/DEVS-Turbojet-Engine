@@ -1,0 +1,176 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package experiment.model;
+
+import java.text.DecimalFormat;
+import java.util.LinkedList;
+import java.util.Queue;
+
+import GenCol.entity;
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.ValueSet;
+import experiment.toolkit.ValueSetCache;
+import experiment.toolkit.ValueSetCacheSingleton;
+import model.modeling.message;
+import view.modeling.ViewableAtomic;
+
+/**
+ * The Class EngineBase.
+ */
+public abstract class ExperimentModelBase extends ViewableAtomic implements ExperimentModelBaseInterface {
+
+  /** The settings. */
+  private final Settings settings = SettingsSingleton.getInstance();
+
+  /** The value set cache. */
+  private final ValueSetCache valueSetCache = ValueSetCacheSingleton.getInstance();
+
+  /** The value set queue in. */
+  protected final Queue<ValueSet> valueSetQueueIn = new LinkedList<ValueSet>();
+
+  /** The value set queue out. */
+  protected final Queue<ValueSet> valueSetQueueOut = new LinkedList<ValueSet>();
+
+  /** The log. */
+  protected ExperimentLog log;
+
+  /** The show model state. */
+  protected boolean showModelState;
+
+  /** The clock. */
+  protected double clock;
+
+  /** The model. */
+  private char model;
+
+  /**
+   * Instantiates a new engine base.
+   */
+  public ExperimentModelBase() {
+    this("EngineBase", 'A');
+  }
+
+  /**
+   * Instantiates a new engine base.
+   *
+   * @param name the name
+   * @param model the model
+   */
+  public ExperimentModelBase(final String name, final char model) {
+    super(String.valueOf(model) + ": " + name);
+    log = new ExperimentLog(getName());
+    showModelState = settings.lookupBool("ExperimentEngine_ShowModelState", "true");
+    this.model = model;
+
+    addInport("xIn");
+    addOutport("xOut");
+    addInport("yIn");
+    addOutport("yOut");
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    valueSetQueueIn.clear();
+    valueSetQueueOut.clear();
+    clock = 0;
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(double e, message x) {
+    clock = clock + e;
+    Continue(e);
+    if (phaseIs("passive"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "xIn", i)) {
+          final entity job = x.getValOnPort("xIn", i);
+          final String[] valueComponents = job.getName().split(":");
+          if (valueComponents[ValueSet.componentModel].equals(Character.toString(model))) {
+            if (valueSetCache.test(job.getName())) {
+              final ValueSet valueSet = valueSetCache.pop(job.getName());
+              valueSetQueueIn.add(valueSet);
+              holdIn("process", 0);
+            } else
+              log.err("ValueSet not found in cache: " + job.getName());
+          }
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    clock = clock + sigma;
+    if (phaseIs("process")) {
+      if (valueSetQueueIn.size() > 0)
+        while (valueSetQueueIn.size() > 0) {
+          final ValueSet valueSet = valueSetQueueIn.remove();
+          processValueSet(valueSet);
+          valueSetQueueOut.add(valueSet);
+          holdIn("transfer", 0);
+        }
+    } else
+      passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#out()
+   */
+  @Override
+  public message out() {
+    final message m = new message();
+    if (phaseIs("transfer"))
+      while (valueSetQueueOut.size() > 0) {
+        final ValueSet valueSet = valueSetQueueOut.remove();
+        valueSetCache.putAndIncrementUpdates(valueSet);
+        m.add(makeContent("xOut", new entity(valueSet.getKey())));
+      }
+    return m;
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#showState()
+   */
+  @Override
+  public void showState() {
+    if (showModelState) {
+      super.showState();
+
+      final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+      String state = "phase=" + phase + "; " +
+          "sigma=" + deltaFormat.format(sigma) + "; " +
+          "clock=" + deltaFormat.format(clock) + "; " +
+          "QueueIn=" + valueSetQueueIn.size() + "; " +
+          "QueueOut=" + valueSetQueueOut.size();
+      log.out(state);
+    }
+  }
+
+  /* (non-Javadoc)
+   * @see view.modeling.ViewableAtomic#getTooltipText()
+   */
+  @Override
+  public String getTooltipText() {
+    final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+    String tooltip = super.getTooltipText() + "\nclock: " + deltaFormat.format(clock);
+    for (ValueSet valueSet : valueSetQueueIn)
+      tooltip += "\nQueueIn: "+ valueSet.getKey();
+    for (ValueSet valueSet : valueSetQueueOut)
+      tooltip += "\nQueueOut: "+ valueSet.getKey();
+    return tooltip;
+  }
+}

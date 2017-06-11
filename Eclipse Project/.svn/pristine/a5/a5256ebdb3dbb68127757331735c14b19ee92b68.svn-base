@@ -1,0 +1,110 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-16
+ */
+package experiment.engine;
+
+import org.apache.commons.io.FilenameUtils;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.Log;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.ValueSet;
+import experiment.toolkit.ValueSetInterface;
+
+/**
+ * The Class EngineProcessStage.
+ */
+public class EngineProcessStage implements ValueSetInterface {
+
+  /** The name. */
+  private String name;
+
+  /** The log. */
+  private Log log;
+
+  /** The calibration list. */
+  private final Calibration[] calibrationList;
+
+  /** The condition setup. */
+  private ConditionSetup conditionSetup;
+
+  /** The diffuser. */
+  private Diffuser diffuser;
+
+  private Compressor compressor;
+
+  private Combustor combustor;
+
+  private Turbine turbine;
+
+  private Afterburner afterburner;
+
+  private Nozzle nozzle;
+
+  /**
+   * Instantiates a new engine process stage.
+   *
+   * @param name the name
+   */
+  public EngineProcessStage(final String name) {
+    this.name = name;
+    log = new Log(name);
+
+    final Settings settings = SettingsSingleton.getInstance();
+
+    char initialVersion = 'A';
+    calibrationList = new Calibration[settings.lookupInt("ExperimentModelCount")];
+    for (int i = 0; i < calibrationList.length; i++) {
+      final Calibration calibration = new Calibration(false);
+      final String filename = FilenameUtils.getBaseName(calibration.getFilename()) + (initialVersion++) + '.' + FilenameUtils.getExtension(calibration.getFilename());
+      calibration.load(filename);
+      calibrationList[i] = calibration;
+    }
+
+    conditionSetup = new ConditionSetup();
+    diffuser = new Diffuser();
+    compressor = new Compressor();
+    combustor = new Combustor();
+    turbine = new Turbine();
+    afterburner = new Afterburner();
+    nozzle = new Nozzle();
+  }
+
+  /* (non-Javadoc)
+   * @see turbojet.toolkit.ValueSetInterface#processValueSet(turbojet.toolkit.ValueSet)
+   */
+  @Override
+  public void processValueSet(final ValueSet valueSet) {
+    final Calibration calibration = calibrationList[valueSet.getVersionIndex()];
+
+    log.out("Processing " + valueSet.getKey());
+    switch (name) {
+    case "Condition Setup":
+      conditionSetup.process(valueSet, calibration);
+      break;
+    case "Diffuser":
+      diffuser.process(valueSet, calibration);
+      break;
+    case "Compressor":
+      compressor.process(valueSet, calibration);
+      break;
+    case "Combustor":
+      combustor.process(valueSet, calibration);
+      break;
+    case "Turbine":
+      turbine.process(valueSet, calibration);
+      break;
+    case "Afterburner":
+      afterburner.process(valueSet, calibration);
+      break;
+    case "Nozzle":
+      nozzle.process(valueSet, calibration);
+      break;
+    }
+  }
+
+}

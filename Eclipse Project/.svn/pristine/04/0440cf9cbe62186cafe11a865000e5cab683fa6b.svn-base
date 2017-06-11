@@ -1,0 +1,132 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package experiment.model;
+
+import GenCol.entity;
+import experiment.design.FrontPorch;
+import experiment.toolkit.ValueSet;
+import model.modeling.message;
+
+/**
+ * The Class ExperimentFrontPorch.
+ */
+public class ExperimentEngineFrontPorch extends ExperimentEngineBase {
+
+  /** The front porch. */
+  private FrontPorch frontPorch;
+
+  /**
+   * Instantiates a new experiment front porch.
+   */
+  public ExperimentEngineFrontPorch() {
+    this("ExperimentFrontPorch");
+  }
+
+  /**
+   * Instantiates a new experiment front porch.
+   *
+   * @param name the name
+   */
+  public ExperimentEngineFrontPorch(final String name) {
+    super(name);
+    frontPorch = new FrontPorch(this.getName());
+
+    addInport("trigger");
+    addOutport("xOut");
+  }
+
+  /* (non-Javadoc)
+   * @see ExperimentMod.ExperimentBase#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    frontPorch.initialize();
+    holdIn("next", 0);
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(final double e, final message x) {
+    Continue(e);
+    if (phaseIs("idle"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "trigger", i)) {
+          final entity job = x.getValOnPort("trigger", i);
+          final String[] trigger = job.getName().split("~");
+          switch (trigger[0]) {
+          case "continue":
+            if (valueSetCache.test(trigger[1])) {
+              final ValueSet valueSet = valueSetCache.pop(trigger[1]);
+              System.out.println(">>> continue "+valueSet.getKey()+" "+valueSet.isInstanceTerminated());
+              valueSet.incrementInstance();
+              valueSetCache.push(valueSet);
+              valueSetQueueOut.add(valueSet);
+            } else
+              log.err("ValueSet not found in cache: " + trigger[0]);
+            holdIn("transfer", 0);
+            break;
+          case "next":
+            final ValueSet valueSet = valueSetCache.popFinal(trigger[1]);
+            System.out.println(">>> next "+valueSet.getKey()+" "+valueSet.isInstanceTerminated());
+            // TODO close completed experiment
+            // TODO delete valueSet
+            holdIn("next", 0);
+            break;
+          default:
+            log.err("Unsupported trigger: " + job.getName());
+            break;
+          }
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+//    if (phaseIs("start")) {
+//      frontPorch.startExperiments(valueSetQueueOut);
+//      holdIn("transfer", 0);
+//    } else if (phaseIs("next")) {
+//      // TODO
+    if (phaseIs("next")) {
+      frontPorch.startExperiments(valueSetQueueOut);
+      holdIn("transfer", 0);
+    } else if (frontPorch.areExperimentsComplete())
+      passivate();
+    else
+      holdIn("idle", INFINITY);
+
+    showState();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#out()
+   */
+  @Override
+  public message out() {
+    final message m = new message();
+    if (phaseIs("transfer"))
+      while (valueSetQueueOut.size() > 0) {
+        final ValueSet valueSet = valueSetQueueOut.remove();
+        m.add(makeContent("xOut", new entity(valueSet.getKey())));
+      }
+    return m;
+  }
+
+  /**
+   * Gets the model count.
+   *
+   * @return the model count
+   */
+  public int getModelCount() {
+    return frontPorch.getModelCount();
+  }
+}

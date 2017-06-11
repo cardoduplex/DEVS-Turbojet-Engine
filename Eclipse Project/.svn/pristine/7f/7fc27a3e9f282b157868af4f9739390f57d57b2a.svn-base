@@ -1,0 +1,64 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-02
+ */
+package TurbojetEngineMod.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class MissionSetup.
+ */
+public class MissionSetup extends EngineBase {
+
+  /** Input: Tzero. */
+  private double Tzero;
+
+  /** Input: gamma. */
+  private double gamma;
+
+  /** Input: Rair. */
+  private double Rair;
+
+  /** Input: gc. */
+  private double gc;
+
+  /** Output: azero. */
+  private double azero;
+
+  /**
+   * Instantiates a new mission setup.
+   *
+   * @param name the name
+   */
+  public MissionSetup(final String name) {
+    super(name);
+  }
+
+  /* (non-Javadoc)
+   * @see TurbojetEngineMod.engine.EngineBase#manifestModel()
+   */
+  @Override
+  public boolean manifestModel() {
+    return true;
+  }
+
+  /* (non-Javadoc)
+   * @see TurbojetEngineMod.engine.EngineStageBase#process(experiment.toolkit.ValueSet, experiment.toolkit.Calibration)
+   */
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    // Condition Setup
+    azero = Math.sqrt(gamma*Rair*gc*Tzero); // 994.85[ft/s] speed of sound
+
+    if (valueSet.getPass() == 1) {
+      valueSet.addValue(name, "azero", azero, "[ft/s]", "Speed of sound");
+    }
+    valueSet.valuePush(this);
+  }
+}

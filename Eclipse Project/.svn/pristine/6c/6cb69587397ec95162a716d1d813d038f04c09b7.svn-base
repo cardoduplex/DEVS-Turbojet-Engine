@@ -1,0 +1,21 @@
+# Settings.properties
+
+# Number of concurrent experiment models to run. Range from 1 to 26.
+ExperimentEngine_ModelCount=3
+
+ExperimentEngine_ShowModelState = false
+ExperimentEngine_DumpValueSet = false
+ExperimentEngine_DumpEachInstance = false
+
+#CalibrationPath=.\xxx\yyy
+#CalibrationFile=MyCalibration.json
+CalibrationDebug=false
+
+#TypeMappingPath=.\aaa\bbb
+#TypeMappingFile=MyTypeMapping.json
+
+#ValueSetPath=.\aaa\bbb
+#ValueSetFile=MyValueSet.json
+
+ValueSet_Label=VSet
+ValueSet_DumpMessageAlignment=60

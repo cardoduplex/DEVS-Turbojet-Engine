@@ -1,0 +1,185 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package turbojet.toolkit;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+/**
+ * The Class ValueSet.
+ */
+public class ValueSet {
+
+  /** The consumers. */
+  private int consumers;
+
+  /** The experiment. */
+  private int experiment;
+
+  /** The version. */
+  private char version;
+
+  /** The instance. */
+  private int instance;
+
+  /** The counter. */
+  private int counter;
+
+  /** The clock. */
+  private double clock;
+
+  /** The value map. */
+  private HashMap<String, Value> valueMap = new HashMap<String, Value>();
+
+  /**
+   * Instantiates a new value set.
+   *
+   * @param experiment the experiment
+   * @param version the version
+   * @param clock the clock
+   */
+  public ValueSet(final int experiment, final char version, final double clock) {
+    consumers = 2;
+    this.experiment = experiment;
+    this.version = version;
+    instance = 0;
+    counter = 0;
+    this.clock = clock;
+  }
+
+  /**
+   * Gets the key.
+   *
+   * @return the key
+   */
+  public String getKey() {
+    return "VSet" + experiment + "_" + version + "_" + instance + "_" + counter;
+  }
+
+  /**
+   * Gets the consumers.
+   *
+   * @return the consumers
+   */
+  public int getConsumers() {
+    return consumers;
+  }
+
+  /**
+   * Gets the experiment.
+   *
+   * @return the experiment
+   */
+  public int getExperiment() {
+    return experiment;
+  }
+
+  /**
+   * Gets the version.
+   *
+   * @return the version
+   */
+  public char getVersion() {
+    return version;
+  }
+
+  /**
+   * Gets the single instance of ValueSet.
+   *
+   * @return single instance of ValueSet
+   */
+  public int getInstance() {
+    return instance;
+  }
+
+  /**
+   * Gets the counter.
+   *
+   * @return the counter
+   */
+  public int getCounter() {
+    return counter;
+  }
+
+  /**
+   * Gets the clock.
+   *
+   * @return the clock
+   */
+  public double getClock() {
+    return clock;
+  }
+
+  /**
+   * Decrement consumers.
+   */
+  public void decrementConsumers() {
+    consumers--;
+  }
+
+  /**
+   * Increment instance.
+   */
+  public void incrementInstance() {
+    instance++;
+  }
+
+  /**
+   * Increment counter.
+   */
+  public void incrementCounter() {
+    counter++;
+  }
+
+  /**
+   * Update clock.
+   *
+   * @param clock the clock
+   */
+  public void updateClock(final double clock) {
+    if (clock > this.clock)
+      this.clock = clock;
+    System.out.println("***** Clock from "+clock+" to "+this.clock);
+  }
+
+  /**
+   * Debug.
+   */
+  public void debug() {
+    System.out.println(">>> Experiment = "+experiment+
+        "\n>>> Version = "+version+
+        "\n>>> Instance = "+instance+
+        "\n>>> Counter = "+counter+
+        "\n>>> clock = "+clock);
+    for (Entry<String, Value> entry : valueMap.entrySet()) {
+        System.out.println(">>> " + entry.getKey() + " = " + entry.getValue().value);
+      }
+  }
+
+  /**
+   * Adds the value.
+   *
+   * @param name the name
+   * @param value the value
+   */
+  public void addValue(final String name, final Object value) {
+    valueMap.put(name, new Value(name, value));
+  }
+
+  /**
+   * Load file.
+   *
+   * @param fileName the file name
+   */
+  public void loadFile(final String fileName) {
+    addValue("xx1", new Double(1.2));
+    addValue("xx2", new Double(2.65463));
+    addValue("xx3", new Double(0.0003233));
+    addValue("xx4", new Double(84900043.2));
+    addValue("xx5", new Double(29000.0));
+  }
+}

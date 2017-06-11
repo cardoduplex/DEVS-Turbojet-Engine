@@ -1,0 +1,116 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-03
+ */
+package experiment.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.Log;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class Turbine.
+ */
+public class Turbine {
+
+  /** The Ke FLUI D str model. */
+  private final String KeFLUID_Str_Model;
+
+  /** The gamma. */
+  private double gamma;
+
+  /** The tao r. */
+  private double tao_r;
+
+  /** The pi c. */
+  private double pi_c;
+
+  /** The tao c. */
+  private double tao_c;
+
+  /** The w c. */
+  private double w_c;
+
+  /** The Wdot c. */
+  private double Wdot_c;
+
+  /** The Tt 4. */
+  private double Tt4;
+
+  /** The tao lambda. */
+  private double tao_lambda;
+
+  /** The Pt 4. */
+  private double Pt4;
+
+  /** The log. */
+  protected Log log;
+
+  /**
+   * Instantiates a new turbine.
+   */
+  public Turbine() {
+    log = new Log(this.getClass().getName());
+    KeFLUID_Str_Model = "undefined";
+  }
+
+  /**
+   * Process.
+   *
+   * @param valueSet the value set
+   * @param calibration the calibration
+   */
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    // Output parameters
+    double w_t = 0;
+    double Wdot_t = 0;
+    double tao_t = 0;
+    double pi_t = 0;
+    double Tt5 = 0;
+    double Pt5 = 0;
+
+    switch (KeFLUID_Str_Model) {
+    case "Isentropic/Static (subsonic)":
+      // Turbine work
+      w_t = -(w_c); // [Btu/lbm] (turbine work is = compressor work)
+
+      // Turbine Specific Work
+      Wdot_t = -Wdot_c; //[hp]
+
+      // Temperature ratio at turbine
+      tao_t = (1-((tao_r/tao_lambda)*(tao_c-1)));
+
+      // Pressure ratio at turbine
+      pi_t = Math.pow(1- (tao_r/tao_lambda) * ((Math.pow(pi_c, (gamma-1)/gamma))-1),(gamma/(gamma-1)));
+
+      // Static Temp. @ Turbine exit/Nozzle entrance
+      Tt5 = Tt4*tao_t; // [degR]
+
+      // Static Press. @ Turbine exit/Nozzle entrance
+      Pt5 = Pt4*pi_t; // [lbf/ft^2]
+
+      break;
+    case "Isentropic/Static (supersonic)":
+      break;
+    case "Polytropic/Static (supersonic)":
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeFLUID_Str_Model + "'");
+      break;
+    }
+
+    valueSet.addValue("w_t",    w_t,    "[Btu/lbm]", "(turbine work is = compressor work)");
+    valueSet.addValue("Wdot_t", Wdot_t, "[hp]", "Turbine Specific Work");
+    valueSet.addValue("tao_t",  tao_t,  "", "Temperature ratio at turbine");
+    valueSet.addValue("pi_t",   pi_t,   "", "Pressure ratio at turbine");
+    valueSet.addValue("Tt5",    Tt5,    "[degR]", "Static Temp. @ Turbine exit/Nozzle entrance");
+    valueSet.addValue("Pt5",    Pt5,    "[lbf/ft^2]", "Static Press. @ Turbine exit/Nozzle entrance");
+    valueSet.valuePush(this);
+    valueSet.debug(">>> ");
+  }
+}

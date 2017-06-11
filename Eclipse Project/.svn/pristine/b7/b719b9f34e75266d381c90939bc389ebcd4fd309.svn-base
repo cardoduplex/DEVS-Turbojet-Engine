@@ -1,0 +1,16 @@
+{
+"Altitude" :  ["36", "[kft]", ""],
+"Tzero" : ["390.51", "[degR]", "Inlet temperature"],
+"Pzero" : ["476.064", "[lbf/ft^2]", "Inlet pressure"],
+"Mzero" : ["0.8", "", "Subsonic flight Mach"],
+"Cp_c" :  ["0.24", "[Btu/lbm-degR]", "Specific heat of dry air (cool)"],
+"Cp_t" : ["0.276", "[Btu/lbm-degR]", "Specific heat of dry air (heated)"],
+"gamma_c" : ["1.4", "[Cp/Cv]", "(cool)"],
+"gamma_t": ["1.33", "[Cp/Cv]", "(heated)"],
+"Rair_c" : ["53.36022857142855", "[ft-lb/degR-lbm]", "Specific gas cnst. dry air (cool)"],
+"Rair_t" : ["53.29001774436091", "[ft-lb/degR-lbm]", "Specific gas cnst. dry air (heated)"],
+"gc" : ["32.174", "[lbm-ft/s^2]", "grav. cnst."],
+"azero" : ["968.8163667687269", "[ft/s]", "speed of sound"],
+"hpr" : ["18400.0", "[Btu/lbm]", ""],
+"mdot_zero" : ["170.0", "[lbm/s]", "Mass flow rate of air"]
+}

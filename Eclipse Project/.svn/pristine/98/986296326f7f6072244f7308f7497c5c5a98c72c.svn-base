@@ -1,0 +1,211 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-03
+ */
+package TurbojetEngineMod.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class Combustor.
+ */
+public class Combustor extends EngineBase {
+
+  /** The fluid model. */
+  private final String KeTJET_Str_FluidModel;
+
+  /** The afterburner flag. */
+  private final boolean KeTJET_Bool_Afterburner;
+
+  /** Input: Tzero. */
+  private double Tzero;
+
+  /** Input: Cp. */
+  private double Cp;
+
+  /** Input: tao_r. */
+  private double tao_r;
+
+  /** Input: tao_c. */
+  private double tao_c;
+
+  /** Input: Pt3. */
+  private double Pt3;
+
+  /** Input: hpr. */
+  private double hpr;
+
+  /** Input: Tt3. */
+  private double Tt3;
+
+  /** Input: Tt4. */
+  private double Tt4;
+
+  /** Output: tao_lambda. */
+  private double tao_lambda;
+
+  /** Output: Pt4. */
+  private double Pt4;
+
+  /** Output: pi_b. */
+  private double pi_b;
+
+  /** Output: f. */
+  private double f;
+
+  /** Output: tao_b. */
+  private double tao_b;
+
+  /**
+   * Instantiates a new combustor.
+   *
+   * @param name the name
+   */
+  public Combustor(final String name) {
+    super(name);
+    KeTJET_Str_FluidModel = "undefined";
+    KeTJET_Bool_Afterburner = false;
+  }
+
+  /* (non-Javadoc)
+   * @see TurbojetEngineMod.engine.EngineBase#manifestModel()
+   */
+  @Override
+  public boolean manifestModel() {
+    return true;
+  }
+
+  /* (non-Javadoc)
+   * @see TurbojetEngineMod.engine.EngineBase#process(experiment.toolkit.ValueSet, experiment.toolkit.Calibration)
+   */
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    switch (KeTJET_Str_FluidModel) {
+    case "Isentropic/Static (subsonic)":
+      IsentropicStaticSubsonic(valueSet);
+      break;
+    case "Isentropic/Static (supersonic)":
+      IsentropicStaticSupersonic(valueSet);
+      break;
+    case "Polytropic/Static (supersonic)":
+      PolytropicStaticSupersonic(valueSet);
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeTJET_Str_FluidModel + "'");
+      break;
+    }
+  }
+
+  /**
+   * Isentropic static subsonic.
+   *
+   * @param valueSet the value set
+   */
+  public void IsentropicStaticSubsonic(final ValueSet valueSet) {
+    valueSet.valuePop(this);
+
+    // Temp. Ratio @ station 4 inlet (station 3 outlet)
+    tao_lambda = Tt4/Tzero;  //(Turbine Inlet Temp./Inlet Temp.)
+
+    // Static Pressure @ station 4 inlet Pt3=Pt4
+    Pt4=Pt3;  //[Btu/lbm]
+
+    // Pressure ratio at burner (combustor)
+    pi_b = Pt4/Pt3;
+
+    // fuel flow (ratio)
+    f = ((Cp*Tzero)/hpr)*(tao_lambda-(tao_c*tao_r));
+
+    // Temp. ratio at burner (combustor)
+    tao_b = (((f*hpr)/(Cp*Tzero))*(1/(tao_c*tao_r))+1);
+
+    if (valueSet.isFirstPass()) {
+      valueSet.addValue(name, "tao_lambda", tao_lambda, "", "Temp. Ratio @ station 4 inlet (station 3 outlet)", "");
+      valueSet.addValue(name, "Pt4",        Pt4,        "[Btu/lbm]", "Static Pressure @ station 4 inlet Pt3=Pt4", "");
+      valueSet.addValue(name, "pi_b",       pi_b,       "", "Pressure ratio at burner (combustor)", "");
+      valueSet.addValue(name, "f",          f,          "", "fuel flow (ratio)", "");
+      valueSet.addValue(name, "tao_b",      tao_b,      "", "Temp. ratio at burner (combustor)", "");
+    }
+    valueSet.valuePush(this);
+  }
+
+  /**
+   * Isentropic static supersonic.
+   *
+   * @param valueSet the value set
+   */
+  public void IsentropicStaticSupersonic(final ValueSet valueSet) {
+    valueSet.valuePop(this);
+
+    // Temp. Ratio @ station 4 inlet (station 3 outlet)
+    tao_lambda = Tt4/Tzero;  //(Turbine Inlet Temp./Inlet Temp.)
+
+    // Static Pressure @ station 4 inlet Pt3=Pt4
+    Pt4=Pt3;  //[Btu/lbm]
+
+    // Pressure ratio at burner (combustor)
+    pi_b = Pt4/Pt3;
+
+    // Temp. ratio at burner (combustor)
+    // tao_b = (((f*hpr)/(Cp*Tzero))*(1/(tao_c*tao_r))+1);
+    tao_b = Tt4/Tt3;
+
+    if (!KeTJET_Bool_Afterburner) {
+      // fuel flow (ratio)
+      f = ((Cp*Tzero)/hpr)*(tao_lambda-(tao_c*tao_r));
+    }
+
+    if (valueSet.isFirstPass()) {
+      valueSet.addValue(name, "tao_lambda", tao_lambda, "", "Temp. Ratio @ station 4 inlet (station 3 outlet)", "");
+      valueSet.addValue(name, "Pt4",        Pt4,        "[Btu/lbm]", "Static Pressure @ station 4 inlet Pt3=Pt4", "");
+      valueSet.addValue(name, "pi_b",       pi_b,       "", "Pressure ratio at burner (combustor)", "");
+      valueSet.addValue(name, "tao_b",      tao_b,      "", "Temp. ratio at burner (combustor)", "");
+      if (!KeTJET_Bool_Afterburner) {
+        valueSet.addValue(name, "f",          f,          "", "fuel flow (ratio)", "");
+      }
+    }
+    valueSet.valuePush(this);
+  }
+
+  /**
+   * Polytropic static supersonic.
+   *
+   * @param valueSet the value set
+   */
+  public void PolytropicStaticSupersonic(final ValueSet valueSet) {
+    valueSet.valuePop(this);
+
+    // Temp. Ratio @ station 4 inlet (station 3 outlet)
+    tao_lambda = Tt4/Tzero;  //(Turbine Inlet Temp./Inlet Temp.)
+
+    // Static Pressure @ station 4 inlet Pt3=Pt4
+    Pt4=Pt3;  //[Btu/lbm]
+
+    // Pressure ratio at burner (combustor)
+    pi_b = Pt4/Pt3;
+
+    // Temp. ratio at burner (combustor)
+    // tao_b = (((f*hpr)/(Cp*Tzero))*(1/(tao_c*tao_r))+1);
+    tao_b = Tt4/Tt3;
+
+    if (!KeTJET_Bool_Afterburner) {
+      // fuel flow (ratio)
+      f = ((Cp*Tzero)/hpr)*(tao_lambda-(tao_c*tao_r));
+    }
+
+    if (valueSet.isFirstPass()) {
+      valueSet.addValue(name, "tao_lambda", tao_lambda, "", "Temp. Ratio @ station 4 inlet (station 3 outlet)", "");
+      valueSet.addValue(name, "Pt4",        Pt4,        "[Btu/lbm]", "Static Pressure @ station 4 inlet Pt3=Pt4", "");
+      valueSet.addValue(name, "pi_b",       pi_b,       "", "Pressure ratio at burner (combustor)", "");
+      valueSet.addValue(name, "tao_b",      tao_b,      "", "Temp. ratio at burner (combustor)", "");
+      if (!KeTJET_Bool_Afterburner) {
+        valueSet.addValue(name, "f",          f,          "", "fuel flow (ratio)", "");
+      }
+    }
+    //valueSet.dump();
+    valueSet.valuePush(this);
+  }
+}

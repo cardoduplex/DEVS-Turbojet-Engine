@@ -1,0 +1,26 @@
+{
+  "<factors>" : [
+    {"Compressor Pressure Ratio" : ["pi_c", {"Low" : "13.5", "Med" : "24.25", "Med2" : "27.045", "Hi" : "35.0"}]},
+    {"Bypass Ratio" : ["alpha", {"Low" : "0.0", "Med" : "1.0", "Hi" : "2.0"}]},
+    {"Turbine Inlet Temperature" : ["Tt4", {"Low" : "1200", "Med" : "2400", "Med2" : "1848", "Hi" : "3600"}]},
+    {"Afterburner State" : ["afterburnerOn", {"Off" : "false", "On" : "true"}]}
+  ],
+  "<runs>" : [
+    {"///+" : ["Med",  "Med",  "Med",  "On"]},
+    {"-/+-" : ["Low",  "Med",  "Hi",  "Off"]},
+    {"/-/-" : ["Med",  "Low",  "Med", "Off"]},
+    {"-+--" : ["Low",  "Hi",  "Low", "Off"]},
+    {"--++" : ["Low",  "Low", "Hi",  "On"]},
+    {"/+/-" : ["Med",  "Hi", "Med",  "Off"]},
+    {"-+++" : ["Low",  "Hi", "Hi", "On"]},
+    {"+++-" : ["Hi",  "Hi", "Hi", "Off"]},
+    {"/+-+" : ["Med", "Hi",  "Low",  "On"]},
+    {"+/--" : ["Hi", "Med",  "Low",  "Off"]},
+    {"----" : ["Low", "Low",  "Low", "On"]},
+    {"-//+" : ["Low", "Med",  "Med2", "On"]},
+    {"++/+" : ["Hi", "Hi", "Med",  "On"]},
+    {"+--+" : ["Hi", "Low", "Low",  "On"]},
+    {"//++" : ["Med2", "Med", "Hi", "On"]},
+    {"+-+-" : ["Hi", "Low", "Hi", "Off"]}
+  ]
+}

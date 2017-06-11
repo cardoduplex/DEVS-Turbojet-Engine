@@ -1,0 +1,22 @@
+{
+  "Isentropic/Static/Supersonic" : [
+    { "Initial State" : [
+      {"Altitude" :  ["double", "30", "[kft]", "", "", true]},
+      {"Tzero" : ["double", "411.8", "[degR]", "Inlet temperature", "", true]},
+      {"Pzero" : ["double", "629.6", "[lbf/ft^2]", "Inlet pressure", "", true]},
+      {"Mzero" : ["double", "0.8", "", "Subsonic flight Mach", "", true]},
+      {"gamma" : ["double", "1.4", "[Cp/Cv]", "(cool)", "", true]},
+      {"Rair" : ["double", "53.35", "[ft-lb/degR-lbm]", "Specific gas cnst. dry air (cool)", "", true]},
+      {"gc" : ["double", "32.174", "[lbm-ft/s^2]", "grav. cnst.", "", true]},
+      {"Cp" :  ["double", "0.246", "[Btu/lbm-degR]", "Specific heat of dry air (cool)", "", true]},
+      {"mdot_zero" : ["double", "170", "[lbm/s]", "Mass flow rate of air", "", true]},
+      {"alpha" : ["double", "0.0", "[BPR]", "", "", true]},
+      {"pi_fan" : ["double", "1.7", "", "", "", true]},
+      {"pi_c" : ["double", "13.5", "[Pt3/Pt2]", "Compressor Pressure Ratio", "", true]},
+      {"hpr" : ["double", "18400.0", "[Btu/lbm]", "Specified enthalpy of fuel", "", true]},
+      {"Tt4" : ["double", "1669.670", "[degR]", "Turbine Inlet Temperature", "", true]},
+      {"Tt6" : ["double", "4140.0", "[degR]", "Afterburner Inlet Temperature", "", true]},
+      {"afterburnerOn" : ["boolean", "false", "", "Afterburner State", "", true]}
+    ]}
+  ]
+}

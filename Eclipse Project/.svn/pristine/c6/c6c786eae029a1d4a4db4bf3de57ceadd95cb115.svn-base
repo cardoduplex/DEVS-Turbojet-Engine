@@ -1,0 +1,60 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-03
+ */
+package experiment.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.Log;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class Afterburner.
+ */
+public class Afterburner {
+
+  /** The Ke FLUI D str model. */
+  private final String KeFLUID_Str_Model;
+
+  /** The log. */
+  protected Log log;
+
+  /**
+   * Instantiates a new afterburner.
+   */
+  public Afterburner() {
+    log = new Log(this.getClass().getName());
+    KeFLUID_Str_Model = "undefined";
+  }
+
+  /**
+   * Process.
+   *
+   * @param valueSet the value set
+   * @param calibration the calibration
+   */
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    // Output parameters
+    //double xxx = 0;
+
+    switch (KeFLUID_Str_Model) {
+    case "Isentropic/Static (subsonic)":
+      break;
+    case "Isentropic/Static (supersonic)":
+      break;
+    case "Polytropic/Static (supersonic)":
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeFLUID_Str_Model + "'");
+      break;
+    }
+
+    //valueSet.addValue("xxx", xxx, "", "");
+    valueSet.valuePush(this);
+  }
+}

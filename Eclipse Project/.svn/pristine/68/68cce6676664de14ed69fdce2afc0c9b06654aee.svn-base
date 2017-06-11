@@ -1,0 +1,164 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package EngineMod;
+
+import java.text.DecimalFormat;
+
+import GenCol.entity;
+import model.modeling.message;
+import turbojet.toolkit.Log;
+import turbojet.toolkit.ValueSet;
+import turbojet.toolkit.ValueSetCache;
+import turbojet.toolkit.ValueSetCacheSingleton;
+import view.modeling.ViewableAtomic;
+
+/**
+ * The Class EngineBase.
+ */
+public class EngineBase extends ViewableAtomic {
+
+  /** The value set cache. */
+  private final ValueSetCache valueSetCache = ValueSetCacheSingleton.getInstance();
+
+  /** The version. */
+  private char version;
+
+  /** The log. */
+  protected Log log;
+
+  /** The clock. */
+  protected double clock;
+
+  /** The current value set. */
+  protected ValueSet currentValueSet;
+
+  /**
+   * Instantiates a new engine base.
+   */
+  public EngineBase() {
+    this("EngineBase", 'A');
+  }
+
+  /**
+   * Instantiates a new engine base.
+   *
+   * @param name the name
+ * @param version
+   */
+  public EngineBase(final String name, final char version) {
+    super(String.valueOf(version) + " " + name);
+    this.version = version;
+    log = new Log(getName());
+
+    addInport("xIn");
+    addOutport("xOut");
+    addInport("yIn");
+    addOutport("yOut");
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    log.out("Initialize");
+    clock = 0;
+    currentValueSet = null;
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(double e, message x) {
+    clock = clock + e;
+    Continue(e);
+    if (phaseIs("passive"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "xIn", i)) {
+          final entity job = x.getValOnPort("xIn", i);
+          final String[] valueComponents = job.getName().split(":");
+          if (valueComponents[2].equals(Character.toString(version))) {
+            if (valueSetCache.test(job.getName())) {
+              currentValueSet = valueSetCache.pop(job.getName());
+              if (clock > currentValueSet.getClock())
+                log.err("Clock is being rolled backward from " + clock + "to " + currentValueSet.getClock());
+              clock = currentValueSet.getClock();
+            } else
+              log.err("ValueSet not found in cache: " + job.getName());
+            holdIn("process", 1);
+          }
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    clock = clock + sigma;
+    if (currentValueSet != null) {
+      processValueSet(currentValueSet);
+      holdIn("transfer", 0);
+    } else
+      passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#out()
+   */
+  @Override
+  public message out() {
+    message m = new message();
+    if (phaseIs("transfer") && currentValueSet != null) {
+      currentValueSet.updateClock(clock);
+      valueSetCache.push(currentValueSet);
+      final entity job = new entity(currentValueSet.getKey());
+      m.add(makeContent("xOut", job));
+      currentValueSet = null;
+    }
+    return m;
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#showState()
+   */
+  @Override
+  public void showState() {
+    super.showState();
+
+    final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+    String state = "phase=" + phase + "; sigma=" + deltaFormat.format(sigma) +
+        "; clock=" + deltaFormat.format(clock);
+    if (currentValueSet != null)
+      state += "; VSet = " + currentValueSet.getKey();
+    log.out(state);
+  }
+
+  /* (non-Javadoc)
+   * @see view.modeling.ViewableAtomic#getTooltipText()
+   */
+  @Override
+  public String getTooltipText() {
+    final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+    String tooltip = super.getTooltipText() + "\nclock: " + deltaFormat.format(clock);
+    if (currentValueSet != null)
+      tooltip += "\nVSet: " + currentValueSet.getKey();
+    return tooltip;
+  }
+
+  /**
+   * Process value set.
+   *
+   * @param valueSet the value set
+   */
+  protected void processValueSet(final ValueSet valueSet) {
+    //log.out("Process value set " + valueSet.getKey());
+  }
+}

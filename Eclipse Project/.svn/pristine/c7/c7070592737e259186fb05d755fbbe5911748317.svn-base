@@ -1,0 +1,185 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package turbojet.toolkit;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+
+/**
+ * The Class Calibration.
+ */
+public class Calibration {
+
+  private final Settings settings = SettingsSingleton.getInstance();
+
+  private TypeMapping typeMapping;
+
+  /** The Constant defaultPathname. */
+  private static final String defaultPathname = ".";
+
+  /** The Constant defaultFilename. */
+  private static final String defaultFilename = "Calibration.json";
+
+  /** The pathname. */
+  private String pathname;
+
+  /** The filename. */
+  private String filename;
+
+  /**
+   * Instantiates a new calibration.
+   *
+   * @throws RuntimeException the runtime exception
+   */
+  public Calibration() throws RuntimeException {
+    pathname = settings.lookupString("CalibrationPath", defaultPathname);
+    filename = settings.lookupString("CalibrationFile", defaultFilename);
+
+    settings.debug();
+    System.out.println("Calibration initialization start");
+    typeMapping = new TypeMapping();
+    typeMapping.setPathname(settings.lookupString("TypeMappingPath", settings.getPathname()));
+    typeMapping.setFilename(settings.lookupString("TypeMappingFile", typeMapping.getFilename()));
+    System.out.println("Pathname: " + typeMapping.getPathname());
+    System.out.println("Filename: " + typeMapping.getFilename());
+    typeMapping.parseFile();
+    System.out.println("Total: " + typeMapping.getMap().size());
+    typeMapping.debug();
+
+    //String path = getPath();
+
+    // Open getPath()
+    // foreach line
+    //    extract name and value
+    //    associative-array.add(name, value)
+    // Close path
+    System.out.println("Calibration initialization end");
+  }
+
+  /**
+   * Gets the pathname.
+   *
+   * @return the pathname
+   */
+  public String getPathname() {
+    return pathname;
+  }
+
+  /**
+   * Gets the filename.
+   *
+   * @return the filename
+   */
+  public String getFilename() {
+    return filename;
+  }
+
+  /**
+   * Update.
+   *
+   * @param someClass the some class
+   */
+  public void update(Object someClass) {
+    try {
+      final Field[] fields = someClass.getClass().getDeclaredFields();
+
+      for (int i = 0; i < fields.length; i++) {
+        final Field field = fields[i];
+
+        //System.out.println("  --"+field.getName());
+        int modifiers = field.getModifiers();
+
+        if (Modifier.isFinal(modifiers)) {
+          //String str= field.getType().getTypeName();
+          switch (field.getType().getTypeName()) {
+            case "boolean":
+
+              if (field.getName() == "KeABC_Bool_Test1") {
+                System.out.println("boolean: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, false);
+              }
+              if (field.getName() == "KeABC_Bool_Test2") {
+                System.out.println("boolean: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, false);
+              }
+
+              break;
+
+            case "char":
+
+              if (field.getName() == "KeABC_c_Test1") {
+                System.out.println("char: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, 'A');
+              }
+              if (field.getName() == "KeABC_c_Test2") {
+                System.out.println("char: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, 'Z');
+              }
+
+              break;
+
+            case "int":
+
+              if (field.getName() == "KeABC_Cnt_Test1") {
+                System.out.println("int: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, 1996);
+              }
+              if (field.getName() == "KeABC_Cnt_Test2") {
+                System.out.println("int: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, 1997);
+              }
+
+              break;
+
+            case "double":
+
+              if (field.getName() == "KeABC_d_Test1") {
+                System.out.println("double: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, 3.1415);
+              }
+              if (field.getName() == "KeABC_d_Test2") {
+                System.out.println("double: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, 1.618);
+              }
+
+              break;
+
+            case "java.lang.String":
+
+              if (field.getName() == "KeABC_Str_Test1") {
+                System.out.println("String: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, "First Test");
+              }
+              if (field.getName() == "KeABC_Str_Test2") {
+                System.out.println("String: " + field.getName());
+                field.setAccessible(true);
+                field.set(someClass, "Second Test");
+              }
+
+              break;
+          }
+        }
+      }
+    } catch (SecurityException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (Exception e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+}

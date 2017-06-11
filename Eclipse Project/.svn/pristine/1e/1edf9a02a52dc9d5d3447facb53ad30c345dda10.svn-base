@@ -1,0 +1,94 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-16
+ */
+package experiment.design.util;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map.Entry;
+
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.Value;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class ValueSet2Txt.
+ */
+public class ValueSet2Txt {
+
+  /** The settings. */
+  private final Settings settings = SettingsSingleton.getInstance();
+
+  /** The log. */
+  private ExperimentLog log;
+
+  /** The Constant defaultFilename. */
+  private static final String defaultFilename = "DEVS_ExperimentEngine.txt";
+
+  /** The filename. */
+  private String filename;
+
+  private String group;
+
+  /** The header. */
+  private boolean header;
+
+  private String format;
+
+  /** The writer. */
+  private FileWriter writer;
+
+  /**
+   * Instantiates a new value set to TXT.
+   */
+  public ValueSet2Txt() {
+    log = new ExperimentLog("ValueSet2Txt");
+    filename = settings.lookupString("CalibrationFile", defaultFilename);
+    group = null;
+    header = true;
+
+    final Path filePath = Paths.get(settings.getPathnameOutput(), filename);
+    try {
+      writer = new FileWriter(filePath.toString());
+    } catch (IOException e) {
+      log.err("Failure opening output file '" + filePath + "'", e);
+    }
+  }
+
+  /**
+   * Process value set.
+   *
+   * @param valueSet the value set
+   */
+  public void processValueSet(final ValueSet valueSet) {
+    try {
+      if (header) {
+        format = "%-" + valueSet.getDumpMessageAlignment() + "s ";
+        header = false;
+      } else {
+        writer.append("\n\n");
+      }
+
+      writer.append("Model = " + valueSet.getModel() + "; Run = " + valueSet.getRun() + "\n");
+      for (Entry<String, Value> entry : valueSet.getMap().entrySet()) {
+        final Value value = entry.getValue();
+        if (value.getGroup() != null && (group == null || !group.equals(value.getGroup()))) {
+          group = value.getGroup();
+          writer.append("Calculated from " + group + "\n");
+        }
+        final String message = entry.getKey() + ": " + value.getValue() + " " + value.getUnits();
+        writer.append("  " + String.format(format, message) + value.getDescription() + "\n");
+      }
+      writer.flush();
+    } catch (IOException e) {
+      log.err("Failure writting header line to file", e);
+    }
+  }
+}

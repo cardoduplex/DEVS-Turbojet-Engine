@@ -1,0 +1,117 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package ExperimentMod;
+
+import GenCol.entity;
+import model.modeling.message;
+import turbojet.toolkit.ValueSet;
+
+/**
+ * The Class ExperimentFrontPorch.
+ */
+public class ExperimentFrontPorch extends ExperimentBase {
+
+  /** The experiment. */
+  private int experiment;
+
+  private double clock;
+
+  /**
+   * Instantiates a new experiment front porch.
+   */
+  public ExperimentFrontPorch() {
+    this("ExperimentFrontPorch");
+  }
+
+  /**
+   * Instantiates a new experiment front porch.
+   *
+   * @param name the name
+   */
+  public ExperimentFrontPorch(String name) {
+    super(name);
+
+    addInport("trigger");
+    addOutport("xOut");
+
+    addTestInput("trigger", new entity("next"));
+  }
+
+  /* (non-Javadoc)
+   * @see ExperimentMod.ExperimentBase#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    experiment = 0;
+    clock = 0;
+    holdIn("next", 0);
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(final double e, final message x) {
+    Continue(e);
+    if (phaseIs("running"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "trigger", i)) {
+          final entity job = x.getValOnPort("trigger", i);
+          final String[] trigger = job.getName().split(":");
+          switch (trigger[0]) {
+          case "next":
+            if (trigger.length > 1)
+              clock = Double.parseDouble(trigger[1]);
+            holdIn(trigger[0], 0);
+            break;
+          default:
+            log.err("Unsupported trigger: " + job.getName());
+            break;
+          }
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    if (phaseIs("next")) {
+      if (valueSet != null) {
+        valueSetCache.pop(valueSet.getKey());
+        valueSet = null;
+      }
+      if (experiment == 0) {
+        System.out.println("Load experiment");
+      }
+      experiment++;
+      System.out.println("Processing int: " + experiment + ", clock=" + clock + ", phase=" + phase);
+      valueSet = valueSetCache.create(experiment, 'X', clock);
+      valueSet.loadFile("xyz");
+      holdIn("active", 0);
+    } else {
+      if (experiment >= 4)
+        passivate();
+      else
+        holdIn("running", INFINITY);
+    }
+
+    showState();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#out()
+   */
+  @Override
+  public message out() {
+    message m = new message();
+    if (phaseIs("active") && valueSet != null)
+      m.add(makeContent("xOut", new entity(valueSet.getKey())));
+    return m;
+  }
+}

@@ -1,0 +1,30 @@
+{
+"<mapping>" : [{"Compressor Pressure Ratio" :
+                 ["pi_c", {"Hi" : "12.2"}, {"Low" : "17.8"}]},
+
+               {"Bypass Ratio" :
+                 ["foobar", {"Hi" : "0"}, {"Low" : "100"}]},
+
+               {"Turbine Inlet Temperature" :
+                 ["Tt4", {"Hi" : "1000"}, {"Low" : "2000"}]},
+
+               {"Afterburner" :
+                 ["<model>", {"On" : "A"}, {"Off" : "B"}]} ],
+
+"++++" : ["Hi",  "Hi",  "Hi",  "On"],
+"+++-" : ["Hi",  "Hi",  "Hi",  "Off"],
+"++-+" : ["Hi",  "Hi",  "Low", "On"],
+"++--" : ["Hi",  "Hi",  "Low", "Off"],
+"+-++" : ["Hi",  "Low", "Hi",  "On"],
+"+-+-" : ["Hi",  "Low", "Hi",  "Off"],
+"+--+" : ["Hi",  "Low", "Low", "On"],
+"+---" : ["Hi",  "Low", "Low", "Off"],
+"-+++" : ["Low", "Hi",  "Hi",  "On"],
+"-++-" : ["Low", "Hi",  "Hi",  "Off"],
+"-+-+" : ["Low", "Hi",  "Low", "On"],
+"-+--" : ["Low", "Hi",  "Low", "Off"],
+"--++" : ["Low", "Low", "Hi",  "On"],
+"--+-" : ["Low", "Low", "Hi",  "Off"],
+"---+" : ["Low", "Low", "Low", "On"],
+"----" : ["Low", "Low", "Low", "Off"]
+}

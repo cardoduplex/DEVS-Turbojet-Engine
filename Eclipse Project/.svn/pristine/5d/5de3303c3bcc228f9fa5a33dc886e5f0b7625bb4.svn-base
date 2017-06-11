@@ -1,0 +1,233 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package experiment.toolkit;
+
+import java.io.Serializable;
+
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * The Class Value.
+ */
+public class Value implements Serializable {
+
+  /** The Constant serialVersionUID. */
+  private static final long serialVersionUID = 1318449437714444932L;
+
+  /**
+   * The Enum theType.
+   */
+  public enum theType {
+    /** The boolean. */ eBoolean,
+    /** The double. */ eDouble
+  };
+
+  /** The alt name. */
+  private String altName;
+
+  /** The group. */
+  private String group;
+
+  /** The value type. */
+  private theType valueType;
+
+  /** The value. */
+  private Object value;
+
+  /** The units. */
+  private String units;
+
+  /** The description. */
+  private String description;
+
+  /** The report. */
+  private boolean report;
+
+  /**
+   * Instantiates a new value.
+   *
+   * @param group the group
+   * @param altName the alt name
+   * @param type the type
+   * @param value the value
+   * @param report the report
+   */
+  public Value(final String group, final String altName, final theType type, final Object value, final boolean report) {
+    this.altName = altName;
+    this.group = group;
+    this.valueType = type;
+    this.value = value;
+    this.units = null;
+    this.description = null;
+    this.report = true;
+  }
+
+  /**
+   * Instantiates a new value.
+   *
+   * @param group the group
+   * @param altName the alt name
+   * @param type the type
+   * @param value the value
+   * @param units the units
+   * @param report the report
+   */
+  public Value(final String group, final String altName, final theType type, final Object value, final String units, final boolean report) {
+    this.altName = altName;
+    this.group = group;
+    this.valueType = type;
+    this.value = value;
+    this.units = units;
+    this.description = null;
+    this.report = report;
+  }
+
+  /**
+   * Instantiates a new value.
+   *
+   * @param group the group
+   * @param altName the alt name
+   * @param type the type
+   * @param value the value
+   * @param units the units
+   * @param description the description
+   * @param report the report
+   */
+  public Value(final String group, final String altName, final theType type, final Object value, final String units, final String description, final boolean report) {
+    this.altName = altName;
+    this.group = group;
+    this.valueType = type;
+    this.value = value;
+    this.units = units;
+    this.description = description;
+    this.report = report;
+  }
+
+  /**
+   * Gets the alt name.
+   *
+   * @return the alt name
+   */
+  public String getAltName() {
+    return altName;
+  }
+
+  /**
+   * Gets the group.
+   *
+   * @return the group
+   */
+  public String getGroup() {
+    return group;
+  }
+
+  /**
+   * Gets the value type.
+   *
+   * @return the value type
+   */
+  public theType getValueType() {
+    return valueType;
+  }
+
+  /**
+   * Gets the value.
+   *
+   * @return the value
+   */
+  public Object getValue() {
+    return value;
+  }
+
+  /**
+   * Sets the value.
+   *
+   * @param value the new value
+   */
+  public void setValue(final Object value) {
+    this.value = value;
+  }
+
+  /**
+   * Sets the value from string.
+   *
+   * @param valueString the new value from string
+   */
+  public void setValueFromString(final String valueString) {
+    switch (valueType) {
+    case eBoolean:
+      this.value = Boolean.parseBoolean(valueString);
+      break;
+    case eDouble:
+      this.value = Double.parseDouble(valueString);
+      break;
+    }
+  }
+
+  /**
+   * Checks for units.
+   *
+   * @return true, if successful
+   */
+  public boolean hasUnits() {
+    return units != null && !units.isEmpty();
+  }
+
+  /**
+   * Gets the units.
+   *
+   * @return the units
+   */
+  public String getUnits() {
+    return units == null ? "" : units;
+  }
+
+  /**
+   * Sets the units.
+   *
+   * @param units the new units
+   */
+  public void setUnits(String units) {
+    this.units = StringUtils.trim(units);
+  }
+
+  /**
+   * Checks for description.
+   *
+   * @return true, if successful
+   */
+  public boolean hasDescription() {
+    return description != null && !description.isEmpty();
+  }
+
+  /**
+   * Gets the description.
+   *
+   * @return the description
+   */
+  public String getDescription() {
+    return description == null ? "" : description;
+  }
+
+  /**
+   * Gets the report.
+   *
+   * @return the report
+   */
+  public boolean getReport() {
+    return report;
+  }
+
+  /**
+   * Sets the description.
+   *
+   * @param description the new description
+   */
+  public void setDescription(String description) {
+    this.description = StringUtils.trim(description);
+  }
+}

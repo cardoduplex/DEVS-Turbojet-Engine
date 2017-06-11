@@ -1,0 +1,123 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-16
+ */
+package TurbojetEngineMod;
+
+import TurbojetEngineMod.engine.Afterburner;
+import TurbojetEngineMod.engine.BypassFan;
+import TurbojetEngineMod.engine.BypassFanNozzle;
+import TurbojetEngineMod.engine.Combustor;
+import TurbojetEngineMod.engine.Compressor;
+import TurbojetEngineMod.engine.Diffuser;
+import TurbojetEngineMod.engine.EngineBase;
+import TurbojetEngineMod.engine.MissionSetup;
+import TurbojetEngineMod.engine.Nozzle;
+import TurbojetEngineMod.engine.Turbine;
+import experiment.model.ExperimentModelBase;
+import experiment.model.ExperimentModelBaseInterface;
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ExperimentState;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class EngineModelBase.
+ */
+public class EngineModelBase extends ExperimentModelBase implements ExperimentModelBaseInterface {
+
+  /** The calibration. */
+  private Calibration calibration;
+
+  /** The engine. */
+  private EngineBase engine;
+
+  /**
+   * Instantiates a new engine model base.
+   */
+  public EngineModelBase() {
+    this("EngineModelBase", 'A', null);
+  }
+
+  /**
+   * Instantiates a new engine model base.
+   *
+   * @param name the name
+   * @param version the version
+   * @param calibration the calibration
+   */
+  public EngineModelBase(final String name, final char version, final Calibration calibration) {
+    super(name, version);
+    this.calibration = calibration;
+
+    switch (name) {
+    case "Mission Setup":
+      engine = new MissionSetup(name);
+      break;
+    case "Diffuser":
+      engine = new Diffuser(name);
+      break;
+    case "(Bypass) Fan":
+      engine= new BypassFan(name);
+      break;
+    case "(Bypass) Fan/Nozzle":
+      engine = new BypassFanNozzle(name);
+      break;
+    case "Compressor":
+      engine = new Compressor(name);
+      break;
+    case "Combustor":
+      engine = new Combustor(name);
+      break;
+    case "Turbine":
+      engine = new Turbine(name);
+      break;
+    case "Afterburner":
+      engine = new Afterburner(name);
+      break;
+    case "Nozzle":
+      engine = new Nozzle(name);
+      break;
+    default:
+      engine = null;
+      break;
+    }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+  }
+
+  /* (non-Javadoc)
+   * @see experiment.model.ExperimentModelBaseInterface#manifestModel()
+   */
+  @Override
+  public boolean manifestModel() {
+    boolean status = false;
+    if (engine != null)
+      status = engine.manifestModel(calibration);
+    return status;
+  }
+
+  /**
+   * Process value set.
+   *
+   * @param experimentState the experiment state
+   * @param valueSet the value set
+   */
+  @Override
+  public void processValueSet(final ExperimentState experimentState, final ValueSet valueSet) {
+    engine.phase = phase;
+    engine.sigma = sigma;
+    engine.clock = clock;
+    engine.process(experimentState, valueSet);
+    phase = engine.phase;
+    sigma = engine.sigma;
+    clock = engine.clock;
+  }
+}

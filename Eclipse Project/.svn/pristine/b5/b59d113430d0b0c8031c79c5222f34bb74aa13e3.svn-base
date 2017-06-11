@@ -1,0 +1,84 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package ExperimentMod;
+
+import java.text.DecimalFormat;
+
+import GenCol.entity;
+import turbojet.toolkit.Log;
+import turbojet.toolkit.ValueSet;
+import turbojet.toolkit.ValueSetCache;
+import turbojet.toolkit.ValueSetCacheSingleton;
+import view.modeling.ViewableAtomic;
+
+/**
+ * The Class ExperimentBase.
+ */
+public class ExperimentBase extends ViewableAtomic {
+
+  /** The value set cache. */
+  public final ValueSetCache valueSetCache = ValueSetCacheSingleton.getInstance();
+
+  /** The log. */
+  protected Log log;
+
+  /** The value set. */
+  protected ValueSet valueSet;
+
+  /**
+   * Instantiates a new experiment base.
+   */
+  public ExperimentBase() {
+    this("ExperimentBase");
+  }
+
+  /**
+   * Instantiates a new experiment base.
+   *
+   * @param name the name
+   */
+  public ExperimentBase(final String name) {
+    super(name);
+    log = new Log(name);
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    valueSet = null;
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#showState()
+   */
+  @Override
+  public void showState() {
+    super.showState();
+
+    final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+    String state = "phase=" + phase + "; sigma=" + deltaFormat.format(sigma);
+    if (valueSet != null)
+        state += "; VSet = " + valueSet.getKey();
+    log.out(state);
+  }
+
+  /* (non-Javadoc)
+   * @see view.modeling.ViewableAtomic#getTooltipText()
+   */
+  @Override
+  public String getTooltipText() {
+    final DecimalFormat deltaFormat = new DecimalFormat("#0.00");
+    String tooltip = super.getTooltipText();
+    if (valueSet != null)
+      tooltip += "\nVSet: " + valueSet.getKey();
+    return tooltip;
+  }
+}

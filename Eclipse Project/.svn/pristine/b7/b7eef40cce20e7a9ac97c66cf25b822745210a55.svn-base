@@ -1,0 +1,309 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package experiment.toolkit;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+/**
+ * The Class ValueSet.
+ */
+public class ValueSet {
+
+  /** The settings. */
+  private final Settings settings = SettingsSingleton.getInstance();
+
+  /** The consumers. */
+  private int consumers;
+
+  /** The experiment. */
+  private int experiment;
+
+  /** The version. */
+  private char version;
+
+  /** The instance. */
+  private long instance;
+
+  /** The instance terminated. */
+  private boolean instanceTerminated;
+
+  /** The mutation. */
+  private long mutation;
+
+  /** The value map. */
+  private Map<String, Value> valueMap = new LinkedHashMap<String, Value>();
+
+  /** The label. */
+  private String label;
+
+  /** The dump message alignment. */
+  private int dumpMessageAlignment;
+
+  /**
+   * Instantiates a new value set.
+   *
+   * @param experiment the experiment
+   * @param version the version
+   */
+  public ValueSet(final int experiment, final char version) {
+    consumers = settings.lookupInt("ValueSet_Consumers", "1");
+    this.experiment = experiment;
+    this.version = version;
+    instance = 0;
+    instanceTerminated = false;
+    mutation = 0;
+    label = settings.lookupString("ValueSet_Label", "ValueSet");
+    dumpMessageAlignment = settings.lookupInt("ValueSet_MessageAlignment", "60");
+  }
+
+  /**
+   * Gets the map.
+   *
+   * @return the map
+   */
+  public Map<String, Value> getMap() {
+    return valueMap;
+  }
+
+  /**
+   * Gets the key.
+   *
+   * @return the key
+   */
+  public String getKey() {
+    return label + ":" + experiment + ":" + version + ":" + instance + ":" + mutation;
+  }
+
+  /**
+   * Gets the consumers.
+   *
+   * @return the consumers
+   */
+  public int getConsumers() {
+    return consumers;
+  }
+
+  /**
+   * Gets the experiment.
+   *
+   * @return the experiment
+   */
+  public int getExperiment() {
+    return experiment;
+  }
+
+  /**
+   * Gets the version.
+   *
+   * @return the version
+   */
+  public char getVersion() {
+    return version;
+  }
+
+  /**
+   * Gets the version index.
+   *
+   * @return the version index
+   */
+  public byte getVersionIndex() {
+    return (byte)(version - 'A');
+  }
+
+  /**
+   * Gets the single instance of ValueSet.
+   *
+   * @return single instance of ValueSet
+   */
+  public long getInstance() {
+    return instance;
+  }
+
+  /**
+   * Gets the mutation.
+   *
+   * @return the mutation
+   */
+  public long getMutation() {
+    return mutation;
+  }
+
+  /**
+   * Decrement consumers.
+   */
+  public void decrementConsumers() {
+    if (consumers > 0)
+      consumers--;
+  }
+
+  /**
+   * Increment instance.
+   */
+  public void incrementInstance() {
+    instance++;
+  }
+
+  /**
+   * Increment mutation.
+   */
+  public void incrementMutation() {
+    mutation++;
+  }
+
+  /**
+   * Terminate instance.
+   */
+  public void terminateInstance() {
+    instanceTerminated = true;
+  }
+
+  /**
+   * Checks if is instance terminated.
+   *
+   * @return true, if is instance terminated
+   */
+  public boolean isInstanceTerminated() {
+    return instanceTerminated == true;
+  }
+
+  /**
+   * Reset instance.
+   */
+  public void resetInstance() {
+    instanceTerminated = false;
+    instance = 0;
+    mutation = 0;
+  }
+
+  /**
+   * Dump.
+   */
+  public void dump() {
+    dump("");
+  }
+
+  /**
+   * Dump.
+   *
+   * @param prefix the prefix
+   */
+  public void dump(final String prefix) {
+    System.out.println(prefix + "Experiment = " + experiment +
+        "; " + "Version = " + version +
+        "; " + "Instance = " + instance +
+        "; " + "Mutation = " + mutation);
+    String group = null;
+    final String format = "%-" + dumpMessageAlignment + "s ";
+    for (Entry<String, Value> entry : valueMap.entrySet()) {
+      final Value value = entry.getValue();
+      if (value.getGroup() != null && (group == null || !group.equals(value.getGroup()))) {
+        group = value.getGroup();
+        System.out.println(prefix + "Calculated from " + group);
+      }
+      final String message = entry.getKey() + ": " + value.getValue() + " " + value.getUnits();
+      System.out.println(prefix + "  " + String.format(format, message) + value.getDescription());
+    }
+  }
+
+  /**
+   * Adds the value.
+   *
+   * @param group the group
+   * @param name the name
+   * @param value the value
+   */
+  public void addValue(final String group, final String name, final double value) {
+    valueMap.put(name, new Value(group, name, value));
+  }
+
+  /**
+   * Adds the value.
+   *
+   * @param group the group
+   * @param name the name
+   * @param value the value
+   * @param units the units
+   */
+  public void addValue(final String group, final String name, final double value, final String units) {
+    valueMap.put(name, new Value(group, name, value, units));
+  }
+
+  /**
+   * Adds the value.
+   *
+   * @param group the group
+   * @param name the name
+   * @param value the value
+   * @param units the units
+   * @param description the description
+   */
+  public void addValue(final String group, final String name, final double value, final String units, final String description) {
+    valueMap.put(name, new Value(group, name, value, units, description));
+  }
+
+  /**
+   * Value pop.
+   *
+   * @param someClass the some class
+   */
+  public void valuePop(Object someClass) {
+    final Field[] fields = someClass.getClass().getDeclaredFields();
+    for (int i = 0; i < fields.length; i++) {
+      final Field field = fields[i];
+      final String valueName = field.getName();
+      if (valueMap.containsKey(valueName)) {
+        final int modifiers = field.getModifiers();
+        if (!Modifier.isFinal(modifiers)) {
+          final boolean accessible = field.isAccessible();
+          if (!accessible)
+            field.setAccessible(true);
+          final Value value = valueMap.get(valueName);
+          try {
+            field.set(someClass, value.getValue());
+          } catch (IllegalArgumentException|IllegalAccessException e) {
+            throw new RuntimeException("ValueSet pop " + valueName + ": " + e.getMessage());
+          }
+          if (!accessible)
+            field.setAccessible(false);
+        }
+      }
+    }
+  }
+
+  /**
+   * Value push.
+   *
+   * @param someClass the some class
+   */
+  public void valuePush(Object someClass) {
+    final Field[] fields = someClass.getClass().getDeclaredFields();
+    for (int i = 0; i < fields.length; i++) {
+      final Field field = fields[i];
+      final String valueName = field.getName();
+      if (valueMap.containsKey(valueName)) {
+        final int modifiers = field.getModifiers();
+        if (!Modifier.isFinal(modifiers)) {
+          final boolean accessible = field.isAccessible();
+          if (!accessible)
+            field.setAccessible(true);
+          final Value value = valueMap.get(valueName);
+          try {
+            value.setValue((double) field.get(someClass));
+          } catch (IllegalArgumentException|IllegalAccessException e) {
+            throw new RuntimeException("ValueSet push " + valueName + ": " + e.getMessage());
+          }
+          if (!accessible)
+            field.setAccessible(false);
+        }
+      }
+    }
+  }
+}

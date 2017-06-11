@@ -1,0 +1,26 @@
+{
+  "<factors>" : [
+    {"Compressor Pressure Ratio" : ["pi_c", {"Low" : "12.2", "Hi" : "17.8"}]},
+    {"Subsonic flight Mach" : ["Mzero", {"Low" : "0.7", "Hi" : "0.9"}]},
+    {"Turbine Inlet Temperature" : ["Tt4", {"Low" : "1000", "Hi" : "2000"}]},
+    {"Inlet temperature" : ["Tzero", {"Max" : "415", "Mid" : "411.8", "Min" : "409"}]}
+  ],
+  "<runs>" : [
+    {"++++" : ["Hi",  "Hi",  "Hi",  "Max"]},
+    {"+++-" : ["Hi",  "Hi",  "Hi",  "Min"]},
+    {"++-+" : ["Hi",  "Hi",  "Low", "Max"]},
+    {"++--" : ["Hi",  "Hi",  "Low", "Min"]},
+    {"+-++" : ["Hi",  "Low", "Hi",  "Max"]},
+    {"+-+-" : ["Hi",  "Low", "Hi",  "Min"]},
+    {"+--+" : ["Hi",  "Low", "Low", "Max"]},
+    {"+---" : ["Hi",  "Low", "Low", "Min"]},
+    {"-+++" : ["Low", "Hi",  "Hi",  "Max"]},
+    {"-++-" : ["Low", "Hi",  "Hi",  "Min"]},
+    {"-+-+" : ["Low", "Hi",  "Low", "Max"]},
+    {"-+--" : ["Low", "Hi",  "Low", "Min"]},
+    {"--++" : ["Low", "Low", "Hi",  "Max"]},
+    {"--+-" : ["Low", "Low", "Hi",  "Min"]},
+    {"---+" : ["Low", "Low", "Low", "Max"]},
+    {"----" : ["Low", "Low", "Low", "Min"]}
+  ]
+}

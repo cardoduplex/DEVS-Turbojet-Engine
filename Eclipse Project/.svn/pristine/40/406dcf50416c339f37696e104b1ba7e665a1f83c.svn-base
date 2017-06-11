@@ -1,0 +1,94 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package turbojet.toolkit;
+
+import java.util.HashMap;
+
+/**
+ * The Class ValueSetCache.
+ */
+public class ValueSetCache {
+
+  /** The value set map. */
+  private HashMap<String, ValueSet> valueSetMap = new HashMap<String, ValueSet>();
+
+  /**
+   * Instantiates a new value set cache.
+   */
+  public ValueSetCache() {
+  }
+
+  /**
+   * Creates the.
+   *
+   * @param experiment the experiment
+   * @param version the version
+   * @param clock the clock
+   * @return the value set
+   */
+  public ValueSet create(final int experiment, final char version, final double clock) {
+    final ValueSet valueSet = new ValueSet(experiment, version, clock);
+    valueSetMap.put(valueSet.getKey(), valueSet);
+    return valueSet;
+  }
+
+  /**
+   * Push.
+   *
+   * @param valueSet the value set
+   */
+  public void push(ValueSet valueSet) {
+    valueSet.incrementCounter();
+    valueSetMap.put(valueSet.getKey(), valueSet);
+  }
+
+  /**
+   * Test.
+   *
+   * @param key the key
+   * @return true, if successful
+   */
+  public boolean test(String key) {
+    return valueSetMap.containsKey(key);
+  }
+
+  /**
+   * Pop.
+   *
+   * @param key the key
+   * @return the value set
+   */
+  public ValueSet pop(String key) {
+    final ValueSet valueSet = valueSetMap.get(key);
+    valueSetMap.remove(valueSet.getKey());
+    return valueSet;
+  }
+
+  /**
+   * Pop final.
+   *
+   * @param key the key
+   * @return the value set
+   */
+  public ValueSet popFinal(String key) {
+    final ValueSet valueSet = valueSetMap.get(key);
+    valueSet.decrementConsumers();
+    if (valueSet.getConsumers() == 0)
+      valueSetMap.remove(valueSet.getKey());
+    return valueSet;
+  }
+
+  /**
+   * Peek.
+   *
+   * @param key the key
+   * @return the value set
+   */
+  public ValueSet peek(String key) {
+    return valueSetMap.get(key);
+  }
+}

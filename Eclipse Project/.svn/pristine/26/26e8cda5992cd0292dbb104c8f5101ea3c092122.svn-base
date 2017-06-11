@@ -1,0 +1,6 @@
+# EngineExperiment.properties
+
+CalibrationPath=.\xxx\yyy
+CalibrationFile=MyCalibration.json
+#TypeMappingPath=.\aaa\bbb
+#TypeMappingFile=MyTypeMapping.json

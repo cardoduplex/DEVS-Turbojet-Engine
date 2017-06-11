@@ -1,0 +1,94 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package ExperimentMod;
+
+import GenCol.entity;
+import model.modeling.message;
+import turbojet.toolkit.ValueSet;
+
+/**
+ * The Class ExperimentBackPorch.
+ */
+public class ExperimentBackPorch extends ExperimentBase {
+
+  /** The current value set. */
+  protected ValueSet currentValueSet;
+
+  /**
+   * Instantiates a new experiment back porch.
+   */
+  public ExperimentBackPorch() {
+    this("ExperimentBackPorch");
+  }
+
+  /**
+   * Instantiates a new experiment back porch.
+   *
+   * @param name the name
+   */
+  public ExperimentBackPorch(final String name) {
+    super(name);
+
+    addInport("xIn");
+    addOutport("trigger");
+  }
+
+  /* (non-Javadoc)
+   * @see ExperimentMod.ExperimentBase#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    currentValueSet = null;
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltext(double, model.modeling.message)
+   */
+  @Override
+  public void deltext(final double e, final message x) {
+    Continue(e);
+    if (phaseIs("passive"))
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "xIn", i)) {
+          final entity job = x.getValOnPort("xIn", i);
+          if (valueSetCache.test(job.getName()))
+            currentValueSet = valueSetCache.popFinal(job.getName());
+          else
+            log.err("ValueSet not found in cache: " + job.getName());
+          holdIn("process", 0);
+        }
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    if (currentValueSet != null) {
+      log.out("--- Process back porch " + currentValueSet.getKey() + " ----");
+      holdIn("trigger", 0);
+    } else
+      passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#out()
+   */
+  @Override
+  public message out() {
+    message m = new message();
+    if (phaseIs("trigger") && currentValueSet != null) {
+      valueSetCache.push(currentValueSet);
+      final entity job = new entity(currentValueSet.getKey());
+      m.add(makeContent("trigger", new entity("next:"+currentValueSet.getClock())));
+      currentValueSet = null;
+    }
+    return m;
+  }
+}

@@ -1,0 +1,41 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-09
+ */
+package experiment.design;
+
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class DataRecorder.
+ */
+public class DataRecorder {
+
+  /** The settings. */
+  final Settings settings = SettingsSingleton.getInstance();
+
+  /** The log. */
+  protected ExperimentLog log;
+
+  /**
+   * Instantiates a new data recorder.
+   */
+  public DataRecorder() {
+    log = new ExperimentLog(this.toString());
+  }
+
+  /**
+   * Process.
+   *
+   * @param valueSet the value set
+   */
+  public void process(final ValueSet valueSet) {
+    log.out("------- Data Recorder " + valueSet.getKey() + " --------");
+    valueSet.dump("[" + valueSet.getVersion() + "]  ");
+  }
+}

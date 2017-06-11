@@ -1,0 +1,75 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-02
+ */
+package turbojet.engine;
+
+import turbojet.toolkit.Calibration;
+import turbojet.toolkit.Log;
+import turbojet.toolkit.ValueSet;
+
+public class Diffuser {
+
+  private final String KeFLUID_Str_Model;
+
+  /** The log. */
+  protected Log log;
+
+  public Diffuser() {
+    log = new Log(this.getClass().getName());
+    KeFLUID_Str_Model = "undefined";
+  }
+
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    // DIFFUSER input parameters
+    double Tzero = 0;
+    double Pzero = 0;
+    double Mzero = 0;
+    double gamma = 0;
+    double Rair = 0;
+    double gc = 0;
+    double azero = 0;
+    double Cp = 0;
+
+    // DIFFUSER output parameters
+    double Tt2 = 0;
+    double Pt2 = 0;
+    double tao_r = 0;
+    double pi_r = 0;
+
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    switch (KeFLUID_Str_Model) {
+    case "Isentropic/Static":
+      // DIFFUSER functions (Isentropic/Static)
+
+      // Stagnation Temp. @ station 2
+      Tt2 = Tzero*((1+((gamma-1)/2)*(Mzero*Mzero)));
+
+      // Stagnation Press. @ station 2
+      Pt2 = Pzero*Math.pow( ((1+((gamma-1)/2)*(Mzero*Mzero))),(gamma/(gamma-1)));
+
+      // Temp. Ratio @ station 2
+      tao_r = Tt2/Tzero;
+
+      //Press. Ratio @ station 2
+      pi_r = Pt2/Pzero;
+
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeFLUID_Str_Model + "'");
+      break;
+    }
+
+    valueSet.valuePush(this);
+    valueSet.addValue("Tt2", Tt2);
+    valueSet.addValue("Pt2", Pt2);
+    valueSet.addValue("tao_r", tao_r);
+    valueSet.addValue("pi_r", pi_r);
+
+    valueSet.debug();
+  }
+}

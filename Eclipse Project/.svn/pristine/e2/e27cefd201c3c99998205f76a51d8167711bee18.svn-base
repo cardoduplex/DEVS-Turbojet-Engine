@@ -1,0 +1,55 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package experiment.model;
+
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class ExperimentDataRecorder.
+ */
+public abstract class ExperimentEngineDataRecorder extends ExperimentEngineBase implements ExperimentEngineDataRecorderInterface {
+
+  /**
+   * Instantiates a new experiment data recorder.
+   */
+  public ExperimentEngineDataRecorder() {
+    this("ExperimentDataRecorder");
+  }
+
+  /**
+   * Instantiates a new experiment data recorder.
+   *
+   * @param name the name
+   */
+  public ExperimentEngineDataRecorder(final String name) {
+    super(name);
+  }
+
+  /* (non-Javadoc)
+   * @see ExperimentMod.ExperimentBase#initialize()
+   */
+  @Override
+  public void initialize() {
+    super.initialize();
+    passivate();
+  }
+
+  /* (non-Javadoc)
+   * @see model.modeling.atomic#deltint()
+   */
+  @Override
+  public void deltint() {
+    if (phaseIs("process")) {
+      if (valueSetQueueIn.size() > 0)
+        while (valueSetQueueIn.size() > 0) {
+          final ValueSet valueSet = valueSetQueueIn.remove();
+          processValueSet(valueSet);
+        }
+    }
+    passivate();
+  }
+}

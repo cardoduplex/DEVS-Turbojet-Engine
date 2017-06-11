@@ -1,0 +1,50 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-09
+ */
+package experiment.design;
+
+import experiment.model.ExperimentEngineDataRecorder;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class DataRecorder.
+ */
+public class DataRecorder extends ExperimentEngineDataRecorder {
+
+  /** The dump value set. */
+  private boolean dumpValueSet;
+
+  /** The dump each instance. */
+  private boolean dumpEachInstance;
+
+  /**
+   * Instantiates a new data recorder.
+   *
+   * @param name the name
+   */
+  public DataRecorder(final String name) {
+    super(name);
+    dumpValueSet = settings.lookupBool("ExperimentEngine_DumpValueSet", "true");
+    dumpEachInstance = settings.lookupBool("ExperimentEngine_DumpEachInstance", "false");
+  }
+
+  /* (non-Javadoc)
+   * @see experiment.model.ExperimentEngineDataRecorderInterface#processValueSet(experiment.toolkit.ValueSet)
+   */
+  public void processValueSet(final ValueSet valueSet) {
+    if (dumpValueSet && (dumpEachInstance || valueSet.isInstanceTerminated())) {
+      log.out("-------- ValueSet dump for key '" + valueSet.getKey() + "' -------- " +
+          (valueSet.isInstanceTerminated() ? "FINAL" : "Instance"));
+      valueSet.dump("[" + valueSet.getVersion() + "]  ");
+    }
+
+    if (valueSet.isInstanceTerminated()) {
+      /* TODO dump to spreadsheet */
+
+      /* TODO dump factors to JMP input file */
+    }
+  }
+}

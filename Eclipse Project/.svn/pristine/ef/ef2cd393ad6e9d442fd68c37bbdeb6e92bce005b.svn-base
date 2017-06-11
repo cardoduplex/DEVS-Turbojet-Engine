@@ -1,0 +1,176 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-09
+ */
+package experiment.design;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+
+import experiment.model.ExperimentEngineDataRecorder;
+import experiment.toolkit.Value;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class DataRecorder.
+ */
+public class DataRecorder extends ExperimentEngineDataRecorder {
+
+  /** The dump value set. */
+  private boolean dumpValueSet;
+
+  /** The dump each pass. */
+  private boolean dumpEachPass;
+
+  private boolean header;
+
+  private FileWriter writer;
+
+  /**
+   * Instantiates a new data recorder.
+   *
+   * @param name the name
+   */
+  public DataRecorder(final String name) {
+    super(name);
+    dumpValueSet = settings.lookupBool("ExperimentEngine_DumpValueSet", "true");
+    dumpEachPass = settings.lookupBool("ExperimentEngine_DumpEachPass", "false");
+    header = true;
+//    try {
+//      //TODO FileSystemView.getFileSystemView().getDefaultDirectory().getPath()
+//
+//      writer = new FileWriter("C:\\ExperimentResults.log");
+//    } catch (IOException e) {
+//      // TODO Auto-generated catch block
+//      e.printStackTrace();
+//    }
+  }
+
+  /* (non-Javadoc)
+   * @see experiment.model.ExperimentEngineDataRecorderInterface#processValueSet(experiment.toolkit.ValueSet)
+   */
+  public void processValueSet(final ValueSet valueSet) {
+   final boolean dumpThisValueSet = dumpValueSet && (dumpEachPass || valueSet.isRunTerminated());
+
+    if (dumpThisValueSet) {
+      log.out("-------- ValueSet dump for key '" + valueSet.getKey() + "' -------- " +
+          (valueSet.isRunTerminated() ? "" : "Pass"));
+      valueSet.dump("[" + valueSet.getModel() + "]  ");
+    }
+
+    if (dumpThisValueSet && false) {
+      if (header) {
+        final List<String> list = new ArrayList<>();
+        list.add("Run");
+        list.add("Model");
+        for (Entry<String, Value> entry : valueSet.getMap().entrySet())
+          list.add(entry.getKey());
+        try {
+          FormatterCvs.writeLine(writer, list);
+          writer.flush();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        header = false;
+      }
+      { // Body
+        final List<String> list = new ArrayList<>();
+        list.add(Integer.toString(valueSet.getRun()));
+        list.add(Character.toString(valueSet.getModel()));
+        for (Entry<String, Value> entry : valueSet.getMap().entrySet())
+          list.add(Double.toString(entry.getValue().getValue()));
+        try {
+          FormatterCvs.writeLine(writer, list);
+          writer.flush();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+      }
+    }
+
+    if (valueSet.isRunTerminated()) {
+      /* TODO dump to spreadsheet */
+
+      /* TODO dump factors to JMP input file */
+    }
+  }
+
+  /**
+   * The Class FormatterCvs.
+   */
+  public static class FormatterCvs {
+
+    /** The Constant DEFAULT_SEPARATOR. */
+    private static final char DEFAULT_SEPARATOR = ',';
+
+    /**
+     * Write line.
+     *
+     * @param w the w
+     * @param values the values
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    public static void writeLine(final Writer w, final List<String> values) throws IOException {
+      writeLine(w, values, DEFAULT_SEPARATOR, ' ');
+    }
+
+    /**
+     * Write line.
+     *
+     * @param w the w
+     * @param values the values
+     * @param separator the separator
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    public static void writeLine(final Writer w, final List<String> values, final char separator) throws IOException {
+      writeLine(w, values, separator, ' ');
+    }
+
+    /**
+     * Write line.
+     *
+     * @param w the w
+     * @param values the values
+     * @param separator the separator
+     * @param customQuote the custom quote
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    public static void writeLine(final Writer w, final List<String> values, final char separator, final char customQuote) throws IOException {
+      boolean first = true;
+      final StringBuilder sb = new StringBuilder();
+      for (String value : values) {
+        if (!first)
+          sb.append(DEFAULT_SEPARATOR);
+        if (customQuote == ' ')
+          sb.append(followCVSformat(value));
+        else
+          sb.append(customQuote).append(followCVSformat(value)).append(customQuote);
+        first = false;
+      }
+      sb.append("\n");
+      w.append(sb.toString());
+    }
+
+    /**
+     * Follow CV sformat.
+     *
+     * @param value the value
+     * @return the string
+     */
+    private static String followCVSformat(final String value) {
+      // RFC 4180  https://tools.ietf.org/html/rfc4180
+      String result = value;
+      if (result.contains("\""))
+        result = result.replace("\"", "\"\"");
+      return result;
+    }
+  }
+}

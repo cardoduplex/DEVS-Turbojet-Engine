@@ -1,0 +1,92 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-16
+ */
+package TurbojetEngineMod.engine;
+
+import org.apache.commons.io.FilenameUtils;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.ValueSet;
+import experiment.toolkit.ValueSetInterface;
+
+/**
+ * The Class EngineProcessStage.
+ */
+public class EngineProcessStage implements ValueSetInterface {
+
+  public String phase;
+
+  public double sigma;
+
+  public double clock;
+
+  /** The name. */
+  //private String name;
+
+  //private ExperimentLog log;
+
+  /** The calibration list. */
+  private final Calibration[] calibrationList;
+
+  private EngineStageBase engineStage;
+
+  /**
+   * Instantiates a new engine process stage.
+   *
+   * @param name the name
+   */
+  public EngineProcessStage(final String name) {
+    //this.name = name;
+    //log = new ExperimentLog(name);
+
+    final Settings settings = SettingsSingleton.getInstance();
+
+    char initialVersion = 'A';
+    calibrationList = new Calibration[settings.lookupInt("ExperimentModelCount")];
+    for (int i = 0; i < calibrationList.length; i++) {
+      final Calibration calibration = new Calibration(false);
+      final String filename = FilenameUtils.getBaseName(calibration.getFilename()) + (initialVersion++) + '.' + FilenameUtils.getExtension(calibration.getFilename());
+      calibration.load(filename);
+      calibrationList[i] = calibration;
+    }
+
+    switch (name) {
+    case "Mission Setup":
+      engineStage = new MissionSetup(name);
+      break;
+    case "Diffuser":
+      engineStage = new Diffuser(name);
+      break;
+    case "Compressor":
+      engineStage = new Compressor(name);
+      break;
+    case "Combustor":
+      engineStage = new Combustor(name);
+      break;
+    case "Turbine":
+      engineStage = new Turbine(name);
+      break;
+    case "Afterburner":
+      engineStage = new Afterburner(name);
+      break;
+    case "Nozzle":
+      engineStage = new Nozzle(name);
+      break;
+    }
+  }
+
+  /* (non-Javadoc)
+   * @see turbojet.toolkit.ValueSetInterface#processValueSet(turbojet.toolkit.ValueSet)
+   */
+  @Override
+  public void processValueSet(final ValueSet valueSet) {
+    final Calibration calibration = calibrationList[valueSet.getVersionIndex()];
+    engineStage.process(valueSet, calibration);
+  }
+}

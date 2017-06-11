@@ -1,0 +1,56 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-09
+ */
+package experiment.design;
+
+import experiment.toolkit.ExperimentLog;
+import experiment.toolkit.Settings;
+import experiment.toolkit.SettingsSingleton;
+import experiment.toolkit.ValueSet;
+import experiment.toolkit.ValueSetCache;
+import experiment.toolkit.ValueSetCacheSingleton;
+
+/**
+ * The Class BackPorch.
+ */
+public class BackPorch {
+
+  /** The settings. */
+  final Settings settings = SettingsSingleton.getInstance();
+
+  /** The log. */
+  protected ExperimentLog log;
+
+  /** The value set cache. */
+  public final ValueSetCache valueSetCache = ValueSetCacheSingleton.getInstance();
+
+  /**
+   * Instantiates a new back porch.
+   *
+   * @param name the name
+   */
+  public BackPorch(final String name) {
+    log = new ExperimentLog(name);
+  }
+
+  /**
+   * Process.
+   *
+   * @param valueSet the value set
+   */
+  public void process(final ValueSet valueSet) {
+    log.out("------- " + valueSet.getKey() + " --------");
+//    valueSetCache.pop(valueSet.getKey());
+//    if (valueSet.getInstance() < 3)
+//      valueSet.incrementInstance();
+//    else {
+//      valueSet.terminateInstance();
+//    }
+    if (valueSet.getInstance() >= 3)
+      valueSet.terminateInstance();
+//    valueSetCache.push(valueSet);
+  }
+}

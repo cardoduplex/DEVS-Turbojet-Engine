@@ -1,0 +1,99 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package turbojet.toolkit;
+
+import org.apache.commons.lang3.StringUtils;
+
+public class Value {
+
+  private int sortKeyA;
+
+  private int sortKeyB;
+
+  private String name;
+
+  private double value;
+
+  private String units;
+
+  private String description;
+
+  public Value(final int sortKeyA, final int sortKeyB, final String name, final double value) {
+    this.sortKeyA = sortKeyA;
+    this.sortKeyB = sortKeyB;
+    this.name = name;
+    this.value = value;
+    this.units = null;
+    this.description = null;
+  }
+
+  public Value(final int sortKeyA, final int sortKeyB, final String name, final double value, final String units) {
+    this.sortKeyA = sortKeyA;
+    this.sortKeyB = sortKeyB;
+    this.name = name;
+    this.value = value;
+    this.units = units;
+    this.description = null;
+  }
+
+  public Value(final int sortKeyA, final int sortKeyB, final String name, final double value, final String units, final String description) {
+    this.sortKeyA = sortKeyA;
+    this.sortKeyB = sortKeyB;
+    this.name = name;
+    this.value = value;
+    this.units = units;
+    this.description = description;
+  }
+
+  public int getSortKeyA() {
+    return sortKeyA;
+  }
+
+  public int getSortKeyB() {
+    return sortKeyB;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = StringUtils.trim(name);
+  }
+
+  public double getValue() {
+    return value;
+  }
+
+  public void setValue(double value) {
+    this.value = value;
+  }
+
+  public boolean hasUnits() {
+    return units != null && !units.isEmpty();
+  }
+
+  public String getUnits() {
+    return units == null ? "" : units;
+  }
+
+  public void setUnits(String units) {
+    this.units = StringUtils.trim(units);
+  }
+
+  public boolean hasDescription() {
+    return description != null && !description.isEmpty();
+  }
+
+  public String getDescription() {
+    return description == null ? "" : description;
+  }
+
+  public void setDescription(String description) {
+    this.description = StringUtils.trim(description);
+  }
+}

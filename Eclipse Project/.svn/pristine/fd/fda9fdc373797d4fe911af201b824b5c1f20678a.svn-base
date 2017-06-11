@@ -1,0 +1,172 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-03
+ */
+package turbojet.engine;
+
+import turbojet.toolkit.Calibration;
+import turbojet.toolkit.Log;
+import turbojet.toolkit.ValueSet;
+
+/**
+ * The Class Nozzle.
+ */
+public class Nozzle {
+
+  /** The Ke FLUI D str model. */
+  private final String KeFLUID_Str_Model;
+
+  /** The Tzero. */
+  private double Tzero;
+
+  /** The Pzero. */
+  private double Pzero;
+
+  /** The Mzero. */
+  private double Mzero;
+
+  /** The gamma. */
+  private double gamma;
+
+  /** The gc. */
+  private double gc;
+
+  /** The azero. */
+  private double azero;
+
+  /** The tao r. */
+  private double tao_r;
+
+  /** The mdot zero. */
+  private double mdot_zero;
+
+  /** The tao c. */
+  private double tao_c;
+
+  /** The tao lambda. */
+  private double tao_lambda;
+
+  /** The f. */
+  private double f;
+
+  /** The tao t. */
+  private double tao_t;
+
+  /** The Tt 5. */
+  private double Tt5;
+
+  /** The Pt 5. */
+  private double Pt5;
+
+  /** The log. */
+  protected Log log;
+
+  /**
+   * Instantiates a new nozzle.
+   */
+  public Nozzle() {
+    log = new Log(this.getClass().getName());
+    KeFLUID_Str_Model = "undefined";
+  }
+
+  /**
+   * Process.
+   *
+   * @param valueSet the value set
+   * @param calibration the calibration
+   */
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    // Output parameters
+    double P7 = 0;
+    double T7 = 0;
+    double Pt7 = 0;
+    double Tt7 = 0;
+    double pi_n = 0;
+    double tao_n = 0;
+    double M_7 = 0;
+    double U_7_over_a_7 = 0;
+    double U_7_over_a_zero = 0;
+    double F_s = 0;
+    double F_7 = 0;
+    double TSFC = 0;
+    double eta_t = 0;
+    double eta_p = 0;
+    double eta_o = 0;
+
+    switch (KeFLUID_Str_Model) {
+    case "Isentropic/Static (subsonic)":
+      // Expanded to Ambient Pressure and Temperature
+      P7 = Pzero;  //[lbf/ft^2]
+      T7 = (tao_lambda/(tao_r*tao_c))*Tzero; //[degR]
+
+      // No loss in Static Pressure or Static Temperature (Isentropic)
+      Pt7 = Pt5;  //[lbf/ft^2]
+      Tt7 = Tt5;  //[degR]
+
+      // Pressure ratio at Nozzle
+      pi_n = Pt7/Pt5;
+
+      // Temp. ratio at Nozzle
+      tao_n = Tt7/Tt5;
+
+      // Mach number at Nozzle Exit
+      M_7 = Math.sqrt((2/(gamma-1))*((tao_r*tao_c*tao_t)-1));
+
+      // Velocity ratio at Nozzle exit
+      U_7_over_a_7 = M_7;
+
+      // Velocity ratio over Ambient speed of sound
+      U_7_over_a_zero = Math.sqrt((2/(gamma-1))*(tao_lambda/(tao_r*tao_c))*((tao_r*tao_c*tao_t)-1));
+
+      // Specific Thrust
+      F_s = (azero/gc)*(U_7_over_a_zero-Mzero);  //[lbf/(lbm/s)]
+
+      // Thrust
+      F_7 = F_s*mdot_zero;  //[lbf]
+
+      // Thrust Specific Fuel Consumption (TSFC)
+      TSFC = (f/F_s)*3600;  //[(lbm/hr)/lbf] or [1/hr]
+
+      // Thermal Efficiency of Turbojet Engine
+      eta_t = 1-(1/(tao_r*tao_c));
+
+      // Performance Efficiency of Turbojet Engine
+      eta_p = (2*Mzero)/(U_7_over_a_zero+Mzero);
+
+      // Overall Turbojet Engine Efficiency
+      eta_o = eta_t*eta_p;
+
+      break;
+    case "Isentropic/Static (supersonic)":
+      break;
+    case "Polytropic/Static (supersonic)":
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeFLUID_Str_Model + "'");
+      break;
+    }
+
+    valueSet.addValue("P7",              P7,              "[lbf/ft^2]", "");
+    valueSet.addValue("T7",              T7,              "[degR]", "");
+    valueSet.addValue("Pt7",             Pt7,             "[lbf/ft^2]", "");
+    valueSet.addValue("Tt7",             Tt7,             "[degR]", "");
+    valueSet.addValue("pi_n",            pi_n,            "", "Pressure ratio at Nozzle");
+    valueSet.addValue("tao_n",           tao_n,           "", "Temp. ratio at Nozzle");
+    valueSet.addValue("M_7",             M_7,             "", "Mach number at Nozzle Exit");
+    valueSet.addValue("U_7_over_a_7",    U_7_over_a_7,    "", "Velocity ratio at Nozzle exit");
+    valueSet.addValue("U_7_over_a_zero", U_7_over_a_zero, "", "Velocity ratio over Ambient speed of sound");
+    valueSet.addValue("F_s",             F_s,             "[lbf/(lbm/s)]", "Specific Thrust");
+    valueSet.addValue("F_7",             F_7,             "[lbf]", "Thrust");
+    valueSet.addValue("TSFC",            TSFC,            "[(lbm/hr)/lbf] or [1/hr]", "Thrust Specific Fuel Consumption (TSFC)");
+    valueSet.addValue("eta_t",           eta_t,           "", "Thermal Efficiency of Turbojet Engine");
+    valueSet.addValue("eta_p",           eta_p,           "", "Performance Efficiency of Turbojet Engine");
+    valueSet.addValue("eta_o",           eta_o,           "", "Overall Turbojet Engine Efficiency");
+    valueSet.valuePush(this);
+    valueSet.debug();
+  }
+}

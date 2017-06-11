@@ -1,0 +1,149 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-16
+ */
+package TurbojetEngineMod;
+
+import java.awt.Dimension;
+import java.awt.Point;
+import java.util.Vector;
+
+import model.modeling.IODevs;
+import view.modeling.ViewableAtomic;
+import view.modeling.ViewableDigraph;
+
+/**
+ * The Class TurbojetEngine.
+ */
+public class TurbojetEngine extends ViewableDigraph {
+
+  /** The version. */
+  private char version;
+
+  /** The models. */
+  private final Vector<ViewableAtomic> models = new Vector<ViewableAtomic>();
+
+  /** The layout rows. */
+  private int layoutRows;
+
+  /**
+   * Instantiates a new turbojet engine.
+   */
+  public TurbojetEngine() {
+    this("TurbojetEngine", 'A');
+  }
+
+  /**
+   * Instantiates a new turbojet engine.
+   *
+   * @param name the name
+   * @param version the version
+   */
+  public TurbojetEngine(final String name, final char version) {
+    super(String.valueOf(version) + " " + name);
+    this.version = version;
+
+    layoutRows = 2;
+    if (version == 'B') /*TODO use calibration*/
+      layoutRows = 3;
+
+    defineLayout();
+  }
+
+  /**
+   * Define layout.
+   */
+  private void defineLayout() {
+    createEngineStage("Condition Setup");
+    createEngineStage("Diffuser");
+    createEngineStage("Compressor");
+    createEngineStage("Combustor");
+    createEngineStage("Turbine");
+    if (version == 'C')  /*TODO use calibration*/
+      createEngineStage("Afterburner");
+    createEngineStage("Nozzle");
+
+    addInport("xIn");
+    addOutport("xOut");
+    baseCoupling(this, models.get(0));
+    for (int i = 0; i < models.size() - 1; i++)
+      baseCoupling(models.get(i), models.get(i+1));
+    baseCoupling(models.get(models.size() - 1), this);
+  }
+
+  /**
+   * Creates the engine stage.
+   *
+   * @param name the name
+   */
+  private void createEngineStage(final String name) {
+    final ViewableAtomic model = new EngineStageGeneric(name, version);
+    models.add(model);
+    add(model);
+  }
+
+  /**
+   * Base coupling.
+   *
+   * @param prev the prev
+   * @param next the next
+   */
+  private void baseCoupling(final IODevs prev, final IODevs next) {
+    final String inPort = prev == this ? "xIn" : "xOut";
+    final String outPort = next == this ? "xOut" : "xIn";
+    addCoupling(prev, inPort, next, outPort);
+    if (prev != this && next != this)
+      addCoupling(next, "yOut", prev, "yIn");
+  }
+
+  /**
+   * Gets the model count.
+   *
+   * @return the model count
+   */
+  public int getModelCount() {
+    return models.size();
+  }
+
+  /**
+   * Gets the height.
+   *
+   * @return the height
+   */
+  public int getHeight() {
+    return 80 * layoutRows;
+  }
+
+  /**
+   * Gets the width.
+   *
+   * @return the width
+   */
+  public int getWidth() {
+    return (190 * ((int)(models.size() / 2) + 1)) + 90;
+  }
+
+  /* (non-Javadoc)
+   * @see view.modeling.ViewableDigraph#layoutForSimViewOverride()
+   */
+  @Override
+  public boolean layoutForSimViewOverride()
+  {
+    int pointX = 0;
+    int pointY = 20;
+    for (int i = 0; i < models.size(); i++) {
+      int interval = i % layoutRows;
+      models.get(i).setPreferredLocation(new Point(pointX, pointY + (80 * interval)));
+      if (interval == (layoutRows - 1))
+        pointX += 190;
+    }
+    if ((models.size() % layoutRows) != 0)
+      pointX += 190;
+    pointX += 90;
+    pointY += (80 * layoutRows) - 20;
+    preferredSize = new Dimension(pointX, pointY);
+    return true;
+  }
+}

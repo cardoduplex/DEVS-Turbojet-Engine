@@ -1,0 +1,117 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-09-24
+ */
+package ExperimentMod;
+
+import GenCol.entity;
+import turbojet.toolkit.Log;
+import turbojet.toolkit.ValueSetCache;
+import turbojet.toolkit.ValueSetCacheSingleton;
+import view.modeling.ViewableAtomic;
+
+/**
+ * The Class ExperimentBase.
+ */
+public class ExperimentBase extends ViewableAtomic {
+
+  /** The value set cache. */
+  public final ValueSetCache valueSetCache = ValueSetCacheSingleton.getInstance();
+
+  /** The log. */
+  protected Log log;
+
+  /** The job. */
+  protected entity job;
+
+  /**
+   * Instantiates a new experiment base.
+   */
+  public ExperimentBase() {
+    this("ExperimentBase");
+  }
+
+  /**
+   * Instantiates a new experiment base.
+   *
+   * @param name the name
+   */
+  public ExperimentBase(final String name) {
+    super(name);
+    log = new Log(name);
+    job = null;
+  }
+
+  @Override
+  public void initialize() {
+    phase = "passive";
+    sigma = INFINITY;
+    super.initialize();
+  }
+
+//  @Override
+//  public void deltext(final double e, final message x) {
+//    Continue(e);
+//
+//    System.out.println("The elapsed time of the processor is" + e);
+//    System.out.println("*****************************************");
+//    System.out.println("external-Phase before: " + phase);
+//
+//    if (phaseIs("passive")) {
+//      for (int i = 0; i < x.getLength(); i++)
+//        if (messageOnPort(x, "in", i)) {
+//          job = x.getValOnPort("in", i);
+//          holdIn("busy", 10);
+//          System.out.println("processing tiem of proc is" + processingTime);
+//        }
+//    }
+//
+//    System.out.println("external-Phase after: " + phase);
+//  }
+
+//@Override
+//  public void deltint() {
+//    System.out.println("Internal-Phase before: " + phase);
+//    passivate();
+//    job = new entity("none");
+//    System.out.println("Internal-Phase after: " + phase);
+//  }
+
+//@Override
+//  public void deltcon(double e, message x) {
+//    System.out.println("confluent");
+//    deltint();
+//    deltext(0, x);
+//  }
+
+//@Override
+//  public message out() {
+//    message m = new message();
+//
+//    if (phaseIs("busy")) {
+//      m.add(makeContent("out", job));
+//    }
+//
+//    return m;
+//  }
+
+//@Override
+//  public void showState() {
+//    super.showState();
+//
+//    // System.out.println("job: " + job.getName());
+//  }
+
+  /* (non-Javadoc)
+ * @see view.modeling.ViewableAtomic#getTooltipText()
+ */
+  @Override
+  public String getTooltipText() {
+    String tooltip = super.getTooltipText();
+    if (job != null)
+      tooltip += "\n" + "job: " + job.getName();
+    return tooltip;
+  }
+}

@@ -1,0 +1,94 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-10-03
+ */
+package TurbojetEngineMod.engine;
+
+import experiment.toolkit.Calibration;
+import experiment.toolkit.ValueSet;
+
+/**
+ * The Class Combustor.
+ */
+public class Combustor extends EngineBase {
+
+  /** The fluid model. */
+  private final String KeFLUID_Str_Model;
+
+  /** The Tzero. */
+  private double Tzero;
+
+  /** The Cp. */
+  private double Cp;
+
+  /** The tao r. */
+  private double tao_r;
+
+  /** The tao c. */
+  private double tao_c;
+
+  /** The Pt 3. */
+  private double Pt3;
+
+  /** The hpr. */
+  private double hpr;
+
+  /** The Tt 4. */
+  private double Tt4;
+
+  /**
+   * Instantiates a new combustor.
+   */
+  public Combustor(final String name) {
+    super(name);
+    KeFLUID_Str_Model = "undefined";
+  }
+
+  public void process(final ValueSet valueSet, final Calibration calibration) {
+    calibration.update(this);
+    valueSet.valuePop(this);
+
+    // Output parameters
+    double tao_lambda = 0;
+    double Pt4 = 0;
+    double pi_b = 0;
+    double f = 0;
+    double tao_b = 0;
+
+    switch (KeFLUID_Str_Model) {
+    case "Isentropic/Static (subsonic)":
+      // Temp. Ratio @ station 4 inlet (station 3 outlet)
+      tao_lambda = Tt4/Tzero;  //(Turbine Inlet Temp./Inlet Temp.)
+
+      // Static Pressure @ station 4 inlet Pt3=Pt4
+      Pt4=Pt3;  //[Btu/lbm]
+
+      // Pressure ratio at burner (combustor)
+      pi_b = Pt4/Pt3;
+
+      // fuel flow (ratio)
+      f = ((Cp*Tzero)/hpr)*(tao_lambda-(tao_c*tao_r));
+
+      // Temp. ratio at burner (combustor)
+      tao_b = (((f*hpr)/(Cp*Tzero))*(1/(tao_c*tao_r))+1);
+
+      break;
+    case "Isentropic/Static (supersonic)":
+      break;
+    case "Polytropic/Static (supersonic)":
+      break;
+    default:
+      log.out("Undefined fluid model '" + KeFLUID_Str_Model + "'");
+      break;
+    }
+
+    valueSet.addValue(name, "tao_lambda", tao_lambda, "", "Temp. Ratio @ station 4 inlet (station 3 outlet)");
+    valueSet.addValue(name, "Pt4",        Pt4,        "[Btu/lbm]", "Static Pressure @ station 4 inlet Pt3=Pt4");
+    valueSet.addValue(name, "pi_b",       pi_b,       "", "Pressure ratio at burner (combustor)");
+    valueSet.addValue(name, "f",          f,          "", "fuel flow (ratio)");
+    valueSet.addValue(name, "tao_b",      tao_b,      "", "Temp. ratio at burner (combustor)");
+    valueSet.valuePush(this);
+  }
+}

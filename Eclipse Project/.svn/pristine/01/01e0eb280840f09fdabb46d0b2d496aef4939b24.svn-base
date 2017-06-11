@@ -1,0 +1,86 @@
+/*
+ * CSE 593 - Fall 2016 - Applied Project
+ * Author  : Lucio Ortiz and Robert Blazewicz
+ * Version : DEVSJAVA 3.0
+ * Date    : 2016-08-31
+ */
+package ExperimentMod;
+
+import GenCol.entity;
+import model.modeling.message;
+import turbojet.toolkit.ValueSet;
+
+public class ExperimentFrontPorch extends ExperimentBase {
+
+  public ExperimentFrontPorch() {
+    this("ExperimentFrontPorch");
+  }
+
+  public ExperimentFrontPorch(String name) {
+    super(name);
+
+    addInport("in");
+    addInport("trigger");
+    addOutport("xOut");
+  }
+
+  @Override
+  public void initialize() {
+    final ValueSet valueSet = valueSetCache.newValueSet(12, 42);
+    job = new entity(valueSet.getKey());
+    super.initialize();
+  }
+
+  @Override
+  public void deltext(final double e, final message x) {
+    Continue(e);
+
+    System.out.println("The elapsed time of the processor is" + e);
+    System.out.println("*****************************************");
+    System.out.println("external-Phase before: " + phase);
+
+    if (phaseIs("passive")) {
+      for (int i = 0; i < x.getLength(); i++)
+        if (messageOnPort(x, "xIn", i)) {
+          job = x.getValOnPort("xIn", i);
+          holdIn("busy", 10);
+          System.out.println("processing tiem of proc is" + 0);
+        }
+    }
+
+    System.out.println("external-Phase after: " + phase);
+  }
+
+  @Override
+  public void deltint() {
+    System.out.println("Internal-Phase before: " + phase);
+    passivate();
+    job = new entity("none");
+    System.out.println("Internal-Phase after: " + phase);
+  }
+
+  @Override
+  public void deltcon(final double e, final message x) {
+    System.out.println("confluent");
+    deltint();
+    deltext(0, x);
+  }
+
+  @Override
+  public message out() {
+    message m = new message();
+
+    if (phaseIs("busy")) {
+      m.add(makeContent("xOut", job));
+    }
+
+    return m;
+  }
+
+  @Override
+  public void showState() {
+    super.showState();
+
+    // System.out.println("job: " + job.getName());
+  }
+}
